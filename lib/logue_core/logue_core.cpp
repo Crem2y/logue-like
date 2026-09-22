@@ -4,10 +4,14 @@ LogueCore::LogueCore(int seed) {
     core_data.seed = seed;
 }
 
-void LogueCore::generate_map(LogueCoreMap* map) {
-    map->seed = core_data.seed;
+void LogueCore::initialize(void) {
 
-    srand(core_data.seed);
+}
+
+void LogueCore::generate_map(logue_core_map_t* map, int seed) {
+    map->seed = seed;
+
+    srand(map->seed);
     rand();
 
     for (int x = 0; x < LOGUE_CORE_MAP_WIDTH; x++) {

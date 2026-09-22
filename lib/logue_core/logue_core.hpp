@@ -8,20 +8,23 @@
 
 typedef struct {
     int seed;
-} LogueCoreData;
+} logue_core_data_t;
 
 typedef struct {
     int seed;
     uint8_t map[LOGUE_CORE_MAP_WIDTH][LOGUE_CORE_MAP_HEIGHT];
-} LogueCoreMap;
+} logue_core_map_t;
 
 class LogueCore {
 public:
     LogueCore(int seed);
 
-    void generate_map(LogueCoreMap* map);
+    void initialize(void);
+    void generate_map(logue_core_map_t* map, int seed);
+
+    int get_seed(void) { return core_data.seed; }
 
 private:
-    LogueCoreData core_data;
-    LogueCoreMap map;
+    logue_core_data_t core_data;
+    logue_core_map_t map;
 };

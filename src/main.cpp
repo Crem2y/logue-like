@@ -6,12 +6,14 @@ int main() {
     int seed = rand();
 
     LogueCore Core = LogueCore(seed);
-    LogueCoreMap logueMap;
+    logue_core_map_t logue_map;
 
-    Core.generate_map(&logueMap);
+    Core.initialize();
+    Core.generate_map(&logue_map, Core.get_seed()); //test
 
     LogueRenderer Renderer = LogueRenderer();
-    Renderer.render_map(&logueMap);
+    logue_renderer_config_t render_config;
+    Renderer.render_map(&logue_map, &render_config);
 
     return 0;
 }

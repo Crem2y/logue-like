@@ -6,9 +6,13 @@
 
 #include "logue_core.hpp"
 
+typedef struct {
+    int temp;
+} logue_renderer_config_t;
+
 class LogueRenderer {
 public:
     LogueRenderer();
 
-    void render_map(LogueCoreMap* map);
+    void render_map(logue_core_map_t* map, logue_renderer_config_t* config);
 };
