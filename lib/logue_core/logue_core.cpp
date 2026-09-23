@@ -57,6 +57,78 @@ void LogueCore::generate_map(logue_map_t* map, int seed, uint8_t difficult) {
         map->room[i] = room;
         make_room(map, &room);
     }
+
+    // make stair
+    while(1) {
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_STAIR;
+            break;
+        }
+    }
+
+    // spawn player
+    while(1) {
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_PLAYER;
+            break;
+        }
+    }
+
+    // make items
+    for (uint16_t i = 0; i < 16;) { //test
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_ITEM;
+            i++;
+        }
+    }
+
+    // make corridors
+    for (uint16_t i = 0; i < LOGUE_ROOM_NUM; i++) {
+        if (!map->room[i].available)
+            continue;
+
+        logue_room_t *room = &map->room[i];
+
+        // connect to east room
+        if ((i % LOGUE_ROOM_COLUMN_NUM) < (LOGUE_ROOM_COLUMN_NUM - 1)) {
+            logue_room_t *east = &map->room[i + 1];
+
+            if (east->available) {
+                // current room: east wall
+                uint16_t x1 = room->x + room->width;
+                uint16_t y1 = room->y + 1 + rand() % (room->height - 2);
+
+                // east room: west wall
+                uint16_t x2 = east->x;
+                uint16_t y2 = east->y + 1 + rand() % (east->height - 2);
+
+                make_corridor(map, x1, y1, x2, y2, CORRIDOR_HORIZONTAL);
+            }
+        }
+
+        // connect to south room
+        if ((i / LOGUE_ROOM_COLUMN_NUM) < (LOGUE_ROOM_ROW_NUM - 1)) {
+            logue_room_t *south = &map->room[i + LOGUE_ROOM_COLUMN_NUM];
+
+            if (south->available) {
+                // current room: south wall
+                uint16_t x1 = room->x + 1 + rand() % (room->width - 2);
+                uint16_t y1 = room->y + room->height;
+
+                // south room: north wall
+                uint16_t x2 = south->x + 1 + rand() % (south->width - 2);
+                uint16_t y2 = south->y;
+
+                make_corridor(map, x1, y1, x2, y2, CORRIDOR_VERTICAL); //test
+            }
+        }
+    }
 }
 
 void LogueCore::make_room(logue_map_t* map, logue_room_t* room) {
@@ -75,5 +147,29 @@ void LogueCore::make_room(logue_map_t* map, logue_room_t* room) {
     for (uint16_t x = 0; x < room->width + 1; x++) {
         map->map[room->y][room->x + x] = MAP_WALL;
         map->map[room->y + room->height][room->x + x] = MAP_WALL;
+    }
+}
+
+void LogueCore::make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t direction) {
+    //test
+    map->map[y1][x1] = MAP_ENEMY;
+    map->map[y2][x2] = MAP_ENEMY;
+
+    switch (direction)
+    {
+    case CORRIDOR_HORIZONTAL:   // (-)
+        /* code */
+        break;
+    case CORRIDOR_DIAGONAL_1:   // (/)
+        /* code */
+        break;
+    case CORRIDOR_VERTICAL:     // (|)
+        /* code */
+        break;
+    case CORRIDOR_DIAGONAL_2:   // (\\)
+        /* code */
+        break;
+    default:
+        break;
     }
 }
