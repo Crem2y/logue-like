@@ -3,28 +3,50 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define LOGUE_CORE_MAP_WIDTH 80
-#define LOGUE_CORE_MAP_HEIGHT 80
+#define LOGUE_MAP_WIDTH 60
+#define LOGUE_MAP_HEIGHT 60
+#define LOGUE_ROOM_NUM 9
+#define LOGUE_ROOM_MIN_SIZE 6
 
 typedef struct {
     int seed;
-} logue_core_data_t;
+} logue_data_t;
+
+typedef struct {
+    uint16_t x;
+    uint16_t y;
+    uint16_t width;
+    uint16_t height;
+} logue_room_t;
 
 typedef struct {
     int seed;
-    uint8_t map[LOGUE_CORE_MAP_WIDTH][LOGUE_CORE_MAP_HEIGHT];
-} logue_core_map_t;
+    uint8_t difficult;
+    uint8_t map[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
+    logue_room_t room[LOGUE_ROOM_NUM];
+} logue_map_t;
+
+enum logue_map_element {
+    MAP_BLANK = 0,
+    MAP_FLOOR,
+    MAP_WALL,
+    MAP_STAIR,
+    MAP_PLAYER,
+    MAP_ENEMY,
+    MAP_ITEM,
+};
 
 class LogueCore {
 public:
     LogueCore(int seed);
 
     void initialize(void);
-    void generate_map(logue_core_map_t* map, int seed);
+    void generate_map(logue_map_t* map, int seed, uint8_t difficult);
+    void make_room(logue_map_t* map, logue_room_t* room);
 
     int get_seed(void) { return core_data.seed; }
 
 private:
-    logue_core_data_t core_data;
-    logue_core_map_t map;
+    logue_data_t core_data;
+    logue_map_t map;
 };

@@ -14,5 +14,5 @@ class LogueRenderer {
 public:
     LogueRenderer();
 
-    void render_map(logue_core_map_t* map, logue_renderer_config_t* config);
+    void render_map(logue_map_t* map, logue_renderer_config_t* config);
 };
