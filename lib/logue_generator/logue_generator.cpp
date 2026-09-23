@@ -157,19 +157,64 @@ void LogueGenerator::make_room(logue_map_t* map, logue_room_t* room) {
 }
 
 void LogueGenerator::make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t direction) {
-    //test
-    map->map[y1][x1] = MAP_ENEMY;
-    map->map[y2][x2] = MAP_ENEMY;
-
     switch (direction)
     {
-    case CORRIDOR_HORIZONTAL:   // (-)
-        /* code */
+    case CORRIDOR_HORIZONTAL: { // (-)
+        uint16_t turn_x = x1 + 1 + rand() % (x2 - x1 - 1);
+
+        // first room -> turn point
+        for (uint16_t x = x1; x <= turn_x; x++) {
+            map->map[y1][x] = MAP_FLOOR;
+        }
+
+        // vertical section
+        if (y1 < y2) {
+            for (uint16_t y = y1; y <= y2; y++) {
+                map->map[y][turn_x] = MAP_FLOOR;
+            }
+        }
+        else {
+            for (uint16_t y = y2; y <= y1; y++) {
+                map->map[y][turn_x] = MAP_FLOOR;
+            }
+        }
+
+        // turn point -> second room
+        for (uint16_t x = turn_x; x <= x2; x++) {
+            map->map[y2][x] = MAP_FLOOR;
+        }
+
         break;
+    }
+
+    case CORRIDOR_VERTICAL: { // (|)
+        uint16_t turn_y = y1 + 1 + rand() % (y2 - y1 - 1);
+
+        // first room -> turn point
+        for (uint16_t y = y1; y <= turn_y; y++) {
+            map->map[y][x1] = MAP_FLOOR;
+        }
+
+        // horizontal section
+        if (x1 < x2) {
+            for (uint16_t x = x1; x <= x2; x++) {
+                map->map[turn_y][x] = MAP_FLOOR;
+            }
+        }
+        else {
+            for (uint16_t x = x2; x <= x1; x++) {
+                map->map[turn_y][x] = MAP_FLOOR;
+            }
+        }
+
+        // turn point -> second room
+        for (uint16_t y = turn_y; y <= y2; y++) {
+            map->map[y][x2] = MAP_FLOOR;
+        }
+
+        break;
+    }
     case CORRIDOR_DIAGONAL_1:   // (/)
-        /* code */
-        break;
-    case CORRIDOR_VERTICAL:     // (|)
         /* code */
         break;
     case CORRIDOR_DIAGONAL_2:   // (\\)
