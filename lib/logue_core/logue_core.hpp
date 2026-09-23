@@ -34,7 +34,7 @@ typedef struct {
 
 typedef struct {
     int seed;
-    uint8_t difficult;
+    uint8_t difficulty;
     uint8_t map[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
     logue_player_t players[LOGUE_MAP_MAX_PLAYERS];
     logue_enemy_t enemies[LOGUE_MAP_MAX_ENEMIES];

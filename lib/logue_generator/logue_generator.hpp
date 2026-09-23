@@ -33,13 +33,13 @@ class LogueGenerator {
 public:
     LogueGenerator(void);
 
-    void generate_map(logue_map_t* map, int seed, uint8_t difficult);
+    void generate_map(logue_map_t* map, int seed, uint8_t difficulty);
     void make_room(logue_map_t* map, logue_room_t* room);
     void make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t direction);
 
     void spawn_player(logue_map_t* map);
-    void spawn_enemy(logue_map_t* map, uint8_t difficult);
-    void spawn_item(logue_map_t* map, uint8_t difficult);
+    void spawn_enemy(logue_map_t* map, uint8_t difficulty);
+    void spawn_item(logue_map_t* map, uint8_t difficulty);
 
 private:
     logue_room_t room[LOGUE_ROOM_NUM];

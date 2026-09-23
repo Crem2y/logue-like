@@ -4,9 +4,9 @@ LogueGenerator::LogueGenerator(void) {
 
 }
 
-void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult) {
+void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty) {
     map->seed = seed;
-    map->difficult = difficult;
+    map->difficulty = difficulty;
 
     srand(map->seed);
     rand();
@@ -78,12 +78,12 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
 
     // spawn enemies
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) { //test
-        spawn_enemy(map, difficult);
+        spawn_enemy(map, difficulty);
     }
 
     // spawn items
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) { //test
-        spawn_item(map, difficult);
+        spawn_item(map, difficulty);
     }
 
     // make corridors
@@ -228,7 +228,7 @@ void LogueGenerator::spawn_player(logue_map_t* map) {
     }
 }
 
-void LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficult) {
+void LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficulty) {
     while(true) {
         uint16_t x = rand() % LOGUE_MAP_WIDTH;
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
@@ -239,7 +239,7 @@ void LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficult) {
     }
 }
 
-void LogueGenerator::spawn_item(logue_map_t* map, uint8_t difficult) {
+void LogueGenerator::spawn_item(logue_map_t* map, uint8_t difficulty) {
     while(true) {
         uint16_t x = rand() % LOGUE_MAP_WIDTH;
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
