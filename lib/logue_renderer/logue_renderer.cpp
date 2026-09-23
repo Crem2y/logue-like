@@ -5,7 +5,7 @@ LogueRenderer::LogueRenderer() {
 }
 
 void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config) {
-    printf("map seed = %d\n", map->seed);
+    printf("map seed = %d, map difficult = %d\n", map->seed, map->difficult);
 
     for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
         for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {

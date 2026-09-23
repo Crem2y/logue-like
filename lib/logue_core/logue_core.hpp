@@ -5,7 +5,14 @@
 
 #define LOGUE_MAP_WIDTH 60
 #define LOGUE_MAP_HEIGHT 60
-#define LOGUE_ROOM_NUM 9
+
+#define LOGUE_ROOM_ROW_NUM 3
+#define LOGUE_ROOM_COLUMN_NUM 3
+#define LOGUE_ROOM_NUM (LOGUE_ROOM_ROW_NUM * LOGUE_ROOM_COLUMN_NUM)
+
+#define LOGUE_ROOM_WIDTH_MAX (LOGUE_MAP_WIDTH  / LOGUE_ROOM_COLUMN_NUM)
+#define LOGUE_ROOM_HEIGHT_MAX (LOGUE_MAP_HEIGHT / LOGUE_ROOM_ROW_NUM)
+
 #define LOGUE_ROOM_MIN_SIZE 6
 
 typedef struct {
@@ -13,6 +20,7 @@ typedef struct {
 } logue_data_t;
 
 typedef struct {
+    uint8_t available;
     uint16_t x;
     uint16_t y;
     uint16_t width;
@@ -45,6 +53,8 @@ public:
     void make_room(logue_map_t* map, logue_room_t* room);
 
     int get_seed(void) { return core_data.seed; }
+    int get_map_seed(void) { return map.seed; }
+    uint8_t get_map_difficult(void) { return map.difficult; }
 
 private:
     logue_data_t core_data;
