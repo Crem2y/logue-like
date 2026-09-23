@@ -15,7 +15,7 @@
 #define LOGUE_ROOM_MIN_SIZE 6
 
 typedef struct {
-    uint8_t available;
+    bool available;
     uint16_t x;
     uint16_t y;
     uint16_t width;

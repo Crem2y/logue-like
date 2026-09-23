@@ -23,7 +23,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
         logue_room_t room = {};
 
         if((rand() % 10) > 7) {
-            room.available = 0;
+            room.available = false;
             this->room[i] = room;
             continue;
         }
@@ -44,7 +44,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
         uint16_t y = cell_y + 1 + rand() % (LOGUE_ROOM_HEIGHT_MAX - height - 1);
 
         // make room
-        room.available = 1;
+        room.available = true;
         room.x = x;
         room.y = y;
         room.width = width;
@@ -55,7 +55,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
     }
 
     // make stair
-    while(1) {
+    while(true) {
         uint16_t x = rand() % LOGUE_MAP_WIDTH;
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
         if(map->map[y][x] == MAP_FLOOR) {
@@ -65,12 +65,22 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
     }
 
     // spawn player
-    while(1) {
+    while(true) {
         uint16_t x = rand() % LOGUE_MAP_WIDTH;
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
         if(map->map[y][x] == MAP_FLOOR) {
             map->map[y][x] = MAP_PLAYER;
             break;
+        }
+    }
+
+    // spawn enemies
+    for (uint16_t i = 0; i < 16;) { //test
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_ENEMY;
+            i++;
         }
     }
 
