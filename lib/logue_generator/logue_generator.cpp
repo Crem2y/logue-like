@@ -17,6 +17,15 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
             map->map[y][x] = MAP_BLANK;
         }
     }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
+        map->players[i].available = false;
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
+        map->enemies[i].available = false;
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
+        map->items[i].available = false;
+    }
 
     // make rooms
     for (uint16_t i = 0; i < LOGUE_ROOM_NUM; i++) {
@@ -65,33 +74,16 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
     }
 
     // spawn player
-    while(true) {
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_PLAYER;
-            break;
-        }
-    }
+    spawn_player(map);
 
     // spawn enemies
-    for (uint16_t i = 0; i < 16;) { //test
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_ENEMY;
-            i++;
-        }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) { //test
+        spawn_enemy(map, difficult);
     }
 
-    // make items
-    for (uint16_t i = 0; i < 16;) { //test
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_ITEM;
-            i++;
-        }
+    // spawn items
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) { //test
+        spawn_item(map, difficult);
     }
 
     // make corridors
@@ -222,5 +214,38 @@ void LogueGenerator::make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, u
         break;
     default:
         break;
+    }
+}
+
+void LogueGenerator::spawn_player(logue_map_t* map) {
+    while(true) {
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_PLAYER;
+            break;
+        }
+    }
+}
+
+void LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficult) {
+    while(true) {
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_ENEMY;
+            break;
+        }
+    }
+}
+
+void LogueGenerator::spawn_item(logue_map_t* map, uint8_t difficult) {
+    while(true) {
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_ITEM;
+            break;
+        }
     }
 }
