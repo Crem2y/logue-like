@@ -12,7 +12,7 @@ typedef struct {
 
 class LogueRenderer {
 public:
-    LogueRenderer();
+    LogueRenderer(void);
 
     void render_map(logue_map_t* map, logue_renderer_config_t* config);
 };
