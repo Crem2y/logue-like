@@ -12,8 +12,8 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficult)
     rand();
 
     // resetting map
-    for (uint16_t y = 0; y < LOGUE_MAP_WIDTH; y++) {
-        for (uint16_t x = 0; x < LOGUE_MAP_HEIGHT; x++) {
+    for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
+        for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
             map->map[y][x] = MAP_BLANK;
         }
     }

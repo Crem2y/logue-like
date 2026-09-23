@@ -37,10 +37,6 @@ public:
     void make_room(logue_map_t* map, logue_room_t* room);
     void make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t direction);
 
-    int get_map_seed(void) { return map.seed; }
-    uint8_t get_map_difficult(void) { return map.difficult; }
-
 private:
-    logue_map_t map;
     logue_room_t room[LOGUE_ROOM_NUM];
 };
