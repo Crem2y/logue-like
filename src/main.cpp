@@ -37,6 +37,12 @@ int main() {
         case 'd':
             Core.process_turn(CMD_MOVE_RIGHT);
             break;
+        case 'h':
+            Core.process_turn(CMD_ATTACK);
+            break;
+        case 'g':
+            Core.process_turn(CMD_SEARCH);
+            break;
         default:
             break;
         }

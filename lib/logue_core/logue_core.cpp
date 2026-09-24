@@ -140,5 +140,5 @@ enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
         return MAP_FLOOR;
     }
 
-    return MAP_WALL;
+    return MAP_FLOOR;
 }
