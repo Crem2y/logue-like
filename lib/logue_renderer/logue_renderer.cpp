@@ -30,19 +30,22 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
 
     // check item
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
-        if(map->items[i].available) {
+        if(!map->items[i].available) continue;
+
+        if(map->discovered[map->items[i].y][map->items[i].x] & 0x01) {
             rendering_map[map->items[i].y][map->items[i].x] = MAP_ITEM;
         }
     }
 
     // check enemy
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        if(map->enemies[i].available) {
+        if(!map->enemies[i].available) continue;
+
+        if(map->discovered[map->enemies[i].y][map->enemies[i].x] == 0x03) {
             rendering_map[map->enemies[i].y][map->enemies[i].x] = MAP_ENEMY;
         }
     }
 
-    
     // check player
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
         if(map->players[i].available) {
