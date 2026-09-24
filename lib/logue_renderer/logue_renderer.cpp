@@ -12,7 +12,7 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
     // copy map & remove objects
     for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
         for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
-            if(map->discovered[y][x] == 0x00) {
+            if(map->visibility[y][x] == 0x00) {
                 rendering_map[y][x] = MAP_BLANK;
                 continue;
             }
@@ -32,7 +32,7 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
         if(!map->items[i].available) continue;
 
-        if(map->discovered[map->items[i].y][map->items[i].x] & 0x01) {
+        if(map->visibility[map->items[i].y][map->items[i].x] & VIS_DISCOVERED) {
             rendering_map[map->items[i].y][map->items[i].x] = MAP_ITEM;
         }
     }
@@ -41,7 +41,7 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
         if(!map->enemies[i].available) continue;
 
-        if(map->discovered[map->enemies[i].y][map->enemies[i].x] == 0x03) {
+        if(map->visibility[map->enemies[i].y][map->enemies[i].x] == (VIS_DISCOVERED || VIS_VISIBLE)) {
             rendering_map[map->enemies[i].y][map->enemies[i].x] = MAP_ENEMY;
         }
     }

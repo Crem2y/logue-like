@@ -50,7 +50,7 @@ typedef struct {
     int seed;
     uint8_t difficulty;
     uint8_t map[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
-    uint8_t discovered[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
+    uint8_t visibility[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
     logue_room_t room[LOGUE_MAP_MAX_ROOMS];
     logue_player_t players[LOGUE_MAP_MAX_PLAYERS];
     logue_enemy_t enemies[LOGUE_MAP_MAX_ENEMIES];
@@ -78,6 +78,12 @@ enum logue_direction {
     DIRECTION_UP_RIGHT,
 };
 
+enum logue_visibility {
+    VIS_DISCOVERED = 0x01,
+    VIS_VISIBLE    = 0x02,
+    VIS_SEARCHED   = 0x04,
+};
+
 enum logue_cmd {
     CMD_NONE = 0,
     CMD_NONE_NO_TURN,
@@ -103,6 +109,7 @@ public:
     void get_map(logue_map_t* map);
 
     void process_turn(enum logue_cmd cmd);
+    bool update_player(enum logue_cmd cmd);
     void update_visibility(void);
     void update_enemies(void);
     enum logue_map_element check_position(uint16_t x, uint16_t y);
