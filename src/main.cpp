@@ -41,6 +41,7 @@ int main() {
             break;
         }
 
+        Core.get_map(&logue_map);
         Renderer.render_map(&logue_map, &render_config);
     }
 
