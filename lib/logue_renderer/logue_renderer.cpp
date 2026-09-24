@@ -5,55 +5,85 @@ LogueRenderer::LogueRenderer() {
 }
 
 void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config) {
-    printf("map seed = %d, map difficulty = %d\n", map->seed, map->difficulty);
+    if(map == NULL || config == NULL) return;
+
+    printf("map seed = %d, map difficulty = %d\n", map->seed, map->difficulty); //test
 
     uint8_t rendering_map[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
 
-    // copy map & remove objects
+    // copy terrain
     for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
         for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
-            if(map->visibility[y][x] == 0x00) {
+
+            if (!is_renderable(map->visibility[y][x], config->map)) {
                 rendering_map[y][x] = MAP_BLANK;
                 continue;
             }
 
-            if(map->map[y][x] == MAP_PLAYER ||
-                map->map[y][x] == MAP_ENEMY ||
-                map->map[y][x] == MAP_ITEM) {
-                
+            // remove generation-time object markers
+            switch (map->map[y][x]) {
+            case MAP_PLAYER:
+            case MAP_ENEMY:
+            case MAP_ITEM:
                 rendering_map[y][x] = MAP_FLOOR;
-            } else {
+                break;
+
+            default:
                 rendering_map[y][x] = map->map[y][x];
+                break;
             }
         }
     }
 
-    // check item
+    // render stair
+    for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
+        for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
+            if (map->map[y][x] != MAP_STAIR)
+                continue;
+
+            if (is_renderable(map->visibility[y][x], config->stair)) {
+                rendering_map[y][x] = MAP_STAIR;
+            }
+        }
+    }
+
+    // render items
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
-        if(!map->items[i].available) continue;
+        if (!map->items[i].available) continue;
 
-        if(map->visibility[map->items[i].y][map->items[i].x] & VIS_DISCOVERED) {
-            rendering_map[map->items[i].y][map->items[i].x] = MAP_ITEM;
+        uint16_t x = map->items[i].x;
+        uint16_t y = map->items[i].y;
+
+        if (is_renderable(map->visibility[y][x], config->item)) {
+            rendering_map[y][x] = MAP_ITEM;
         }
     }
 
-    // check enemy
+    // render enemies
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        if(!map->enemies[i].available) continue;
+        if (!map->enemies[i].available) continue;
 
-        if(map->visibility[map->enemies[i].y][map->enemies[i].x] & (VIS_VISIBLE | VIS_SEARCHED)) {
-            rendering_map[map->enemies[i].y][map->enemies[i].x] = MAP_ENEMY;
+        uint16_t x = map->enemies[i].x;
+        uint16_t y = map->enemies[i].y;
+
+        if (is_renderable(map->visibility[y][x], config->enemy)) {
+            rendering_map[y][x] = MAP_ENEMY;
         }
     }
 
-    // check player
+    // render players
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
-        if(map->players[i].available) {
-            rendering_map[map->players[i].y][map->players[i].x] = MAP_PLAYER;
+        if (!map->players[i].available) continue;
+
+        uint16_t x = map->players[i].x;
+        uint16_t y = map->players[i].y;
+
+        if (is_renderable(map->visibility[y][x], config->player)) {
+            rendering_map[y][x] = MAP_PLAYER;
         }
     }
 
-    // rendering map
+    // print map
     for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
         for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
             switch(rendering_map[y][x]) {
@@ -83,4 +113,12 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
         }
         printf("\n");
     }
+}
+
+bool LogueRenderer::is_renderable(uint8_t visibility, uint8_t config) {
+    if (config & RENDER_ALWAYS) {
+        return true;
+    }
+
+    return (visibility & config) != 0;
 }

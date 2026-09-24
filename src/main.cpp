@@ -1,5 +1,29 @@
 #include "main.hpp"
 
+const logue_renderer_config_t normal_config = {
+    .map    = RENDER_DISCOVERED,
+    .stair  = RENDER_DISCOVERED,
+    .player = RENDER_SEARCHED,
+    .enemy  = RENDER_SEARCHED,
+    .item   = RENDER_SEARCHED,
+};
+
+const logue_renderer_config_t insight_config = {
+    .map    = RENDER_DISCOVERED,
+    .stair  = RENDER_DISCOVERED,
+    .player = RENDER_ALWAYS,
+    .enemy  = RENDER_VISIBLE,
+    .item   = RENDER_DISCOVERED,
+};
+
+const logue_renderer_config_t debugging_config = {
+    .map    = RENDER_ALWAYS,
+    .stair  = RENDER_ALWAYS,
+    .player = RENDER_ALWAYS,
+    .enemy  = RENDER_ALWAYS,
+    .item   = RENDER_ALWAYS,
+};
+
 int main() {
     srand(time(NULL));
     rand();
@@ -11,7 +35,7 @@ int main() {
     logue_map_t logue_map;
     
     LogueRenderer Renderer = LogueRenderer();
-    logue_renderer_config_t render_config;
+    logue_renderer_config_t render_config = normal_config;
 
     Core.initialize();
     Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test
