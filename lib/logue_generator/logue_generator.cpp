@@ -12,21 +12,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
     rand();
 
     // resetting map
-    for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
-        for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
-            map->map[y][x] = MAP_BLANK;
-            map->visibility[y][x] = 0;
-        }
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
-        map->players[i].available = false;
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        map->enemies[i].available = false;
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
-        map->items[i].available = false;
-    }
+    reset_map(map);
 
     // make rooms
     for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
@@ -64,26 +50,56 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
         make_room(map, &room);
     }
 
-    // make stair
-    while(true) {
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_STAIR;
-            break;
+    spawn_stair(map);
+
+    spawn_player(map);
+    spawn_enemies(map, LOGUE_MAP_MAX_ENEMIES, difficulty);
+    spawn_items(map, LOGUE_MAP_MAX_ITEMS, difficulty);
+
+    make_corridors(map);
+}
+
+void LogueGenerator::reset_map(logue_map_t* map) {
+    for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
+        for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
+            map->map[y][x] = MAP_BLANK;
+            map->visibility[y][x] = 0;
+        }
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
+        map->room[i].available = false;
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
+        map->players[i].available = false;
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
+        map->enemies[i].available = false;
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
+        map->items[i].available = false;
+    }
+}
+
+void LogueGenerator::make_room(logue_map_t* map, logue_room_t* room) {
+    // filling floor
+    for (uint16_t y = 0; y < room->height; y++) {
+        for (uint16_t x = 0; x < room->width; x++) {
+            map->map[room->y + y][room->x + x] = MAP_FLOOR;
         }
     }
 
-    // spawn player
-    spawn_player(map);
+    // making walls
+    for (uint16_t y = 0; y < room->height + 1; y++) {
+        map->map[room->y + y][room->x] = MAP_WALL;
+        map->map[room->y + y][room->x + room->width] = MAP_WALL;
+    }
+    for (uint16_t x = 0; x < room->width + 1; x++) {
+        map->map[room->y][room->x + x] = MAP_WALL;
+        map->map[room->y + room->height][room->x + x] = MAP_WALL;
+    }
+}
 
-    // spawn enemies
-    spawn_enemies(map, LOGUE_MAP_MAX_ENEMIES, difficulty);
-
-    // spawn items
-    spawn_items(map, LOGUE_MAP_MAX_ITEMS, difficulty);
-
-    // make corridors
+void LogueGenerator::make_corridors(logue_map_t* map) {
     for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
         if (!map->room[i].available)
             continue;
@@ -120,28 +136,9 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
                 uint16_t x2 = south->x + 1 + rand() % (south->width - 2);
                 uint16_t y2 = south->y;
 
-                make_corridor(map, x1, y1, x2, y2, CORRIDOR_VERTICAL); //test
+                make_corridor(map, x1, y1, x2, y2, CORRIDOR_VERTICAL);
             }
         }
-    }
-}
-
-void LogueGenerator::make_room(logue_map_t* map, logue_room_t* room) {
-    // filling floor
-    for (uint16_t y = 0; y < room->height; y++) {
-        for (uint16_t x = 0; x < room->width; x++) {
-            map->map[room->y + y][room->x + x] = MAP_FLOOR;
-        }
-    }
-
-    // making walls
-    for (uint16_t y = 0; y < room->height + 1; y++) {
-        map->map[room->y + y][room->x] = MAP_WALL;
-        map->map[room->y + y][room->x + room->width] = MAP_WALL;
-    }
-    for (uint16_t x = 0; x < room->width + 1; x++) {
-        map->map[room->y][room->x + x] = MAP_WALL;
-        map->map[room->y + room->height][room->x + x] = MAP_WALL;
     }
 }
 
@@ -211,6 +208,17 @@ void LogueGenerator::make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, u
         break;
     default:
         break;
+    }
+}
+
+void LogueGenerator::spawn_stair(logue_map_t* map) {
+    while(true) {
+        uint16_t x = rand() % LOGUE_MAP_WIDTH;
+        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
+        if(map->map[y][x] == MAP_FLOOR) {
+            map->map[y][x] = MAP_STAIR;
+            break;
+        }
     }
 }
 
