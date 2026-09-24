@@ -17,6 +17,8 @@ int main() {
     Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test
     Core.set_map(&logue_map);
 
+    Core.process_turn(CMD_NONE_NO_TURN);
+    Core.get_map(&logue_map);
     Renderer.render_map(&logue_map, &render_config);
 
     char input;

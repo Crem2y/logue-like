@@ -80,6 +80,7 @@ enum logue_direction {
 
 enum logue_cmd {
     CMD_NONE = 0,
+    CMD_NONE_NO_TURN,
     CMD_MOVE_UP,
     CMD_MOVE_UP_LEFT,
     CMD_MOVE_LEFT,
@@ -102,8 +103,12 @@ public:
     void get_map(logue_map_t* map);
 
     void process_turn(enum logue_cmd cmd);
+    void update_visibility(void);
+    void update_enemies(void);
     enum logue_map_element check_position(uint16_t x, uint16_t y);
     enum logue_map_element move(uint16_t* x, uint16_t* y, int16_t dx, int16_t dy);
+
+    int16_t get_room_at(uint16_t x, uint16_t y);
 
     int get_seed(void) { return core_data.seed; }
 

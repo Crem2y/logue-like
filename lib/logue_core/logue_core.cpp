@@ -125,18 +125,63 @@ void LogueCore::process_turn(enum logue_cmd cmd) {
         is_turn_processed = true;
         break;
     }
+    case CMD_NONE: {
+        is_turn_processed = true;
+        break;
+    }
+    case CMD_NONE_NO_TURN:
     default:
+        is_turn_processed = false;
         break;
     }
 
     floor_info.players[0] = player;
+
+    update_visibility();
+
     if(!is_turn_processed) return;
 
     // update enemies
+    update_enemies();
+}
+
+void LogueCore::update_visibility(void) {
+    logue_player_t player = floor_info.players[0];
+
+    // update visibility
+    for(uint16_t i=0; i<LOGUE_MAP_HEIGHT; i++) {
+        for(uint16_t j=0; j<LOGUE_MAP_WIDTH; j++) {
+            floor_info.discovered[i][j] &= 0x01; // discovered, but not updating
+        }
+    }
+
+    for (int16_t dy = -1; dy <= 1; dy++) {
+        for (int16_t dx = -1; dx <= 1; dx++) {
+            int16_t x = player.x + dx;
+            int16_t y = player.y + dy;
+
+            if (x < 0 || x >= LOGUE_MAP_WIDTH || y < 0 || y >= LOGUE_MAP_HEIGHT) continue;
+
+            floor_info.discovered[y][x] = 0x03;
+        }
+    }
+
+    int16_t room_num = get_room_at(player.x, player.y);
+    if(room_num > -1) {
+        logue_room_t room = floor_info.room[room_num];
+        for(uint16_t i=0; i<room.height+1; i++) {
+            for(uint16_t j=0; j<room.width+1; j++) {
+                floor_info.discovered[room.y+i][room.x+j] = 0x03; // discovered and updating
+            }
+        }
+    }
+}
+
+void LogueCore::update_enemies(void) {
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
         logue_enemy_t enemy = floor_info.enemies[i];
         if(!enemy.available) continue;
-        //test
+
         uint8_t direction = rand() % 8;
         direction &= 0xFE; // 8-direction to 4-direction
         enemy.direction = direction;
@@ -160,9 +205,6 @@ void LogueCore::process_turn(enum logue_cmd cmd) {
         
         floor_info.enemies[i] = enemy;
     }
-
-    // update visibility
-
 }
 
 enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int16_t dy) {
@@ -229,4 +271,21 @@ enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
     }
 
     return MAP_FLOOR;
+}
+
+int16_t LogueCore::get_room_at(uint16_t x, uint16_t y) {
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
+        logue_room_t* room = &floor_info.room[i];
+
+        if (!room->available) continue;
+
+        if (x > room->x &&
+            x < room->x + room->width &&
+            y > room->y &&
+            y < room->y + room->height) {
+            return i;
+        }
+    }
+
+    return -1;
 }

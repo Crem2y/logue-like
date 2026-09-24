@@ -8,16 +8,22 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
     printf("map seed = %d, map difficulty = %d\n", map->seed, map->difficulty);
 
     uint8_t rendering_map[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
-    memcpy(&rendering_map, map->map, sizeof(rendering_map));
 
-    // remove objects
+    // copy map & remove objects
     for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
         for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
-            if(rendering_map[y][x] == MAP_PLAYER ||
-                rendering_map[y][x] == MAP_ENEMY ||
-                rendering_map[y][x] == MAP_ITEM) {
+            if(map->discovered[y][x] == 0x00) {
+                rendering_map[y][x] = MAP_BLANK;
+                continue;
+            }
+
+            if(map->map[y][x] == MAP_PLAYER ||
+                map->map[y][x] == MAP_ENEMY ||
+                map->map[y][x] == MAP_ITEM) {
                 
                 rendering_map[y][x] = MAP_FLOOR;
+            } else {
+                rendering_map[y][x] = map->map[y][x];
             }
         }
     }
