@@ -49,14 +49,12 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
         map->room[i] = room;
         make_room(map, &room);
     }
-
+    make_corridors(map);
     spawn_stair(map);
 
     spawn_player(map);
     spawn_enemies(map, LOGUE_MAP_MAX_ENEMIES, difficulty);
     spawn_items(map, LOGUE_MAP_MAX_ITEMS, difficulty);
-
-    make_corridors(map);
 }
 
 void LogueGenerator::reset_map(logue_map_t* map) {
@@ -212,27 +210,23 @@ void LogueGenerator::make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, u
 }
 
 void LogueGenerator::spawn_stair(logue_map_t* map) {
-    while(true) {
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_STAIR;
-            break;
-        }
+    uint16_t x;
+    uint16_t y;
+
+    if (get_random_empty_position(map, &x, &y)) {
+        map->map[y][x] = MAP_STAIR;
     }
 }
 
 void LogueGenerator::spawn_player(logue_map_t* map) {
-    while(true) {
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_PLAYER;
-            map->players[0].available = true;
-            map->players[0].x = x;
-            map->players[0].y = y;
-            break;
-        }
+    uint16_t x;
+    uint16_t y;
+
+    if (get_random_empty_position(map, &x, &y)) {
+        map->map[y][x] = MAP_PLAYER;
+        map->players[0].available = true;
+        map->players[0].x = x;
+        map->players[0].y = y;
     }
 }
 
@@ -243,19 +237,22 @@ void LogueGenerator::spawn_enemies(logue_map_t* map, uint8_t num, uint8_t diffic
 }
 
 logue_enemy_t LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficulty) {
-    logue_enemy_t enemy;
+    logue_enemy_t enemy = {};
 
-    while(true) {
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_ENEMY;
-            enemy.available = true;
-            enemy.x = x;
-            enemy.y = y;
-            break;
-        }
+    uint16_t x;
+    uint16_t y;
+
+    if (!get_random_empty_position(map, &x, &y)) {
+        return enemy;
     }
+
+    map->map[y][x] = MAP_ENEMY;
+
+    enemy.available = true;
+    enemy.x = x;
+    enemy.y = y;
+
+    // todo: generating enemy info...
 
     return enemy;
 }
@@ -267,19 +264,70 @@ void LogueGenerator::spawn_items(logue_map_t* map, uint8_t num, uint8_t difficul
 }
 
 logue_item_t LogueGenerator::spawn_item(logue_map_t* map, uint8_t difficulty) {
-    logue_item_t item;
+    logue_item_t item = {};
 
-    while(true) {
-        uint16_t x = rand() % LOGUE_MAP_WIDTH;
-        uint16_t y = rand() % LOGUE_MAP_HEIGHT;
-        if(map->map[y][x] == MAP_FLOOR) {
-            map->map[y][x] = MAP_ITEM;
-            item.available = true;
-            item.x = x;
-            item.y = y;
-            break;
+    uint16_t x;
+    uint16_t y;
+
+    if (!get_random_empty_position(map, &x, &y)) {
+        return item;
+    }
+
+    map->map[y][x] = MAP_ITEM;
+
+    item.available = true;
+    item.x = x;
+    item.y = y;
+
+    // todo: generating item info...
+
+    return item;
+}
+
+bool LogueGenerator::get_random_empty_position(logue_map_t* map, uint16_t* out_x, uint16_t* out_y) {
+    uint32_t empty_count = 0;
+
+    // count empty positions
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
+        logue_room_t* room = &map->room[i];
+
+        if (!room->available) continue;
+
+        for (uint16_t y = room->y + 1; y < room->y + room->height; y++) {
+            for (uint16_t x = room->x + 1; x < room->x + room->width; x++) {
+                if (map->map[y][x] == MAP_FLOOR) {
+                    empty_count++;
+                }
+            }
         }
     }
 
-    return item;
+    if (empty_count == 0) {
+        return false;
+    }
+
+    // select random empty position
+    uint32_t target = rand() % empty_count;
+
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
+        logue_room_t* room = &map->room[i];
+
+        if (!room->available) continue;
+
+        for (uint16_t y = room->y + 1; y < room->y + room->height; y++) {
+            for (uint16_t x = room->x + 1; x < room->x + room->width; x++) {
+                if (map->map[y][x] != MAP_FLOOR) continue;
+
+                if (target == 0) {
+                    *out_x = x;
+                    *out_y = y;
+                    return true;
+                }
+
+                target--;
+            }
+        }
+    }
+
+    return false;
 }
