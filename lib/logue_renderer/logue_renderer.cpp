@@ -41,7 +41,7 @@ void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
         if(!map->enemies[i].available) continue;
 
-        if(map->visibility[map->enemies[i].y][map->enemies[i].x] == (VIS_DISCOVERED || VIS_VISIBLE)) {
+        if(map->visibility[map->enemies[i].y][map->enemies[i].x] & (VIS_VISIBLE | VIS_SEARCHED)) {
             rendering_map[map->enemies[i].y][map->enemies[i].x] = MAP_ENEMY;
         }
     }

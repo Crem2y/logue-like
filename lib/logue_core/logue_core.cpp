@@ -158,7 +158,7 @@ void LogueCore::update_visibility(void) {
     // update visibility
     for(uint16_t i=0; i<LOGUE_MAP_HEIGHT; i++) {
         for(uint16_t j=0; j<LOGUE_MAP_WIDTH; j++) {
-            floor_info.visibility[i][j] &= ~VIS_DISCOVERED;
+            floor_info.visibility[i][j] &= ~(VIS_VISIBLE | VIS_SEARCHED);
         }
     }
 
@@ -169,7 +169,7 @@ void LogueCore::update_visibility(void) {
 
             if (x < 0 || x >= LOGUE_MAP_WIDTH || y < 0 || y >= LOGUE_MAP_HEIGHT) continue;
 
-            floor_info.visibility[y][x] = (VIS_DISCOVERED || VIS_VISIBLE);
+            floor_info.visibility[y][x] = (VIS_DISCOVERED | VIS_VISIBLE);
         }
     }
 
@@ -178,7 +178,7 @@ void LogueCore::update_visibility(void) {
         logue_room_t room = floor_info.room[room_num];
         for(uint16_t i=0; i<room.height+1; i++) {
             for(uint16_t j=0; j<room.width+1; j++) {
-                floor_info.visibility[room.y+i][room.x+j] = (VIS_DISCOVERED || VIS_VISIBLE);
+                floor_info.visibility[room.y+i][room.x+j] = (VIS_DISCOVERED | VIS_VISIBLE);
             }
         }
     }
