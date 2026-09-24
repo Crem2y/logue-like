@@ -28,12 +28,14 @@ typedef struct {
 
 typedef struct {
     bool available;
+    uint8_t direction;
     uint16_t x;
     uint16_t y;
 } logue_player_t;
 
 typedef struct {
     bool available;
+    uint8_t direction;
     uint16_t x;
     uint16_t y;
 } logue_enemy_t;
@@ -63,6 +65,17 @@ enum logue_map_element {
     MAP_PLAYER,
     MAP_ENEMY,
     MAP_ITEM,
+};
+
+enum logue_direction {
+    DIRECTION_UP,
+    DIRECTION_UP_LEFT,
+    DIRECTION_LEFT,
+    DIRECTION_DOWN_LEFT,
+    DIRECTION_DOWN,
+    DIRECTION_DOWN_RIGHT,
+    DIRECTION_RIGHT,
+    DIRECTION_UP_RIGHT,
 };
 
 enum logue_cmd {

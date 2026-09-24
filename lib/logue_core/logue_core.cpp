@@ -20,69 +20,115 @@ void LogueCore::process_turn(enum logue_cmd cmd) {
     bool is_turn_processed = false;
 
     logue_player_t player = floor_info.players[0];
-    printf("CORE player: %u, %u\n",
-       floor_info.players[0].x,
-       floor_info.players[0].y);
 
     // cmd process
-    switch (cmd)
-    {
+    switch (cmd) {
     case CMD_MOVE_UP: {
+        player.direction = DIRECTION_UP;
         enum logue_map_element element = check_position(player.x, player.y-1);
-        if(element == MAP_WALL) {
+        switch (element) {
+        case MAP_WALL:
             printf("wall!\n");
-        } else if (element == MAP_ENEMY) {
+            break;
+        case MAP_ENEMY:
             printf("enemy!\n");
-        } else {
+            break;
+        default:
             player.y -= 1;
             is_turn_processed = true;
+            break;
         }
         break;
     }
     case CMD_MOVE_DOWN: {
+        player.direction = DIRECTION_DOWN;
         enum logue_map_element element = check_position(player.x, player.y+1);
-        if(element == MAP_WALL) {
+        switch (element) {
+        case MAP_WALL:
             printf("wall!\n");
-        } else if (element == MAP_ENEMY) {
+            break;
+        case MAP_ENEMY:
             printf("enemy!\n");
-        } else {
+            break;
+        default:
             player.y += 1;
             is_turn_processed = true;
+            break;
         }
         break;
     }
     case CMD_MOVE_LEFT: {
+        player.direction = DIRECTION_LEFT;
         enum logue_map_element element = check_position(player.x-1, player.y);
-        if(element == MAP_WALL) {
+        switch (element) {
+        case MAP_WALL:
             printf("wall!\n");
-        } else if (element == MAP_ENEMY) {
+            break;
+        case MAP_ENEMY:
             printf("enemy!\n");
-        } else {
+            break;
+        default:
             player.x -= 1;
             is_turn_processed = true;
+            break;
         }
         break;
     }
     case CMD_MOVE_RIGHT: {
+        player.direction = DIRECTION_RIGHT;
         enum logue_map_element element = check_position(player.x+1, player.y);
-        if(element == MAP_WALL) {
+        switch (element) {
+        case MAP_WALL:
             printf("wall!\n");
-        } else if (element == MAP_ENEMY) {
+            break;
+        case MAP_ENEMY:
             printf("enemy!\n");
-        } else {
+            break;
+        default:
             player.x += 1;
             is_turn_processed = true;
+            break;
         }
         break;
     }
-    case CMD_ATTACK:
-        printf("attacked!\n");
+    case CMD_ATTACK: {
+        enum logue_map_element element;
+        switch(player.direction) {
+        case DIRECTION_UP:
+            element = check_position(player.x, player.y-1);
+            break;
+        case DIRECTION_DOWN:
+            element = check_position(player.x, player.y+1);
+            break;
+        case DIRECTION_LEFT:
+            element = check_position(player.x-1, player.y);
+            break;
+        case DIRECTION_RIGHT:
+            element = check_position(player.x+1, player.y);
+            break;
+        default:
+            break;
+        }
+
+        switch (element) {
+        case MAP_WALL:
+            printf("you attacked wall!\n");
+            break;
+        case MAP_ENEMY:
+            printf("you attacked enemy!\n");
+            break;
+        default:
+            printf("you attacked nothing!\n");
+            break;
+        }
         is_turn_processed = true;
         break;
-    case CMD_SEARCH:
+    }
+    case CMD_SEARCH: {
         printf("searched!\n");
         is_turn_processed = true;
         break;
+    }
     default:
         is_turn_processed = true;
         break;
