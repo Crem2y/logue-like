@@ -68,7 +68,7 @@ enum logue_map_element {
 };
 
 enum logue_direction {
-    DIRECTION_UP,
+    DIRECTION_UP = 0,
     DIRECTION_UP_LEFT,
     DIRECTION_LEFT,
     DIRECTION_DOWN_LEFT,
