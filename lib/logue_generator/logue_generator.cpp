@@ -15,6 +15,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
     for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
         for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
             map->map[y][x] = MAP_BLANK;
+            map->discovered[y][x] = 0;
         }
     }
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
@@ -28,12 +29,12 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
     }
 
     // make rooms
-    for (uint16_t i = 0; i < LOGUE_ROOM_NUM; i++) {
+    for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
         logue_room_t room = {};
 
         if((rand() % 10) > 7) {
             room.available = false;
-            this->room[i] = room;
+            map->room[i] = room;
             continue;
         }
 
@@ -59,7 +60,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
         room.width = width;
         room.height = height;
     
-        this->room[i] = room;
+        map->room[i] = room;
         make_room(map, &room);
     }
 
@@ -77,25 +78,21 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
     spawn_player(map);
 
     // spawn enemies
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) { //test
-        spawn_enemy(map, difficulty);
-    }
+    spawn_enemies(map, LOGUE_MAP_MAX_ENEMIES, difficulty);
 
     // spawn items
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) { //test
-        spawn_item(map, difficulty);
-    }
+    spawn_items(map, LOGUE_MAP_MAX_ITEMS, difficulty);
 
     // make corridors
-    for (uint16_t i = 0; i < LOGUE_ROOM_NUM; i++) {
-        if (!this->room[i].available)
+    for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
+        if (!map->room[i].available)
             continue;
 
-        logue_room_t *room = &this->room[i];
+        logue_room_t *room = &map->room[i];
 
         // connect to east room
         if ((i % LOGUE_ROOM_COLUMN_NUM) < (LOGUE_ROOM_COLUMN_NUM - 1)) {
-            logue_room_t *east = &this->room[i + 1];
+            logue_room_t *east = &map->room[i + 1];
 
             if (east->available) {
                 // current room: east wall
@@ -112,7 +109,7 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
 
         // connect to south room
         if ((i / LOGUE_ROOM_COLUMN_NUM) < (LOGUE_ROOM_ROW_NUM - 1)) {
-            logue_room_t *south = &this->room[i + LOGUE_ROOM_COLUMN_NUM];
+            logue_room_t *south = &map->room[i + LOGUE_ROOM_COLUMN_NUM];
 
             if (south->available) {
                 // current room: south wall
@@ -223,29 +220,58 @@ void LogueGenerator::spawn_player(logue_map_t* map) {
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
         if(map->map[y][x] == MAP_FLOOR) {
             map->map[y][x] = MAP_PLAYER;
+            map->players[0].available = true;
+            map->players[0].x = x;
+            map->players[0].y = y;
             break;
         }
     }
 }
 
-void LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficulty) {
+void LogueGenerator::spawn_enemies(logue_map_t* map, uint8_t num, uint8_t difficulty) {
+    for (uint16_t i = 0; i < num; i++) {
+        map->enemies[i] = spawn_enemy(map, difficulty);
+    }
+}
+
+logue_enemy_t LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficulty) {
+    logue_enemy_t enemy;
+
     while(true) {
         uint16_t x = rand() % LOGUE_MAP_WIDTH;
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
         if(map->map[y][x] == MAP_FLOOR) {
             map->map[y][x] = MAP_ENEMY;
+            enemy.available = true;
+            enemy.x = x;
+            enemy.y = y;
             break;
         }
     }
+
+    return enemy;
 }
 
-void LogueGenerator::spawn_item(logue_map_t* map, uint8_t difficulty) {
+void LogueGenerator::spawn_items(logue_map_t* map, uint8_t num, uint8_t difficulty) {
+    for (uint16_t i = 0; i < num; i++) {
+        map->items[i] = spawn_item(map, difficulty);
+    }
+}
+
+logue_item_t LogueGenerator::spawn_item(logue_map_t* map, uint8_t difficulty) {
+    logue_item_t item;
+
     while(true) {
         uint16_t x = rand() % LOGUE_MAP_WIDTH;
         uint16_t y = rand() % LOGUE_MAP_HEIGHT;
         if(map->map[y][x] == MAP_FLOOR) {
             map->map[y][x] = MAP_ITEM;
+            item.available = true;
+            item.x = x;
+            item.y = y;
             break;
         }
     }
+
+    return item;
 }

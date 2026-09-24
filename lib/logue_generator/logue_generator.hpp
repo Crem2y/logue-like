@@ -7,20 +7,12 @@
 
 #define LOGUE_ROOM_ROW_NUM 3 // -
 #define LOGUE_ROOM_COLUMN_NUM 3 // |
-#define LOGUE_ROOM_NUM (LOGUE_ROOM_ROW_NUM * LOGUE_ROOM_COLUMN_NUM)
+#define LOGUE_ROOM_GEN_NUM (LOGUE_ROOM_ROW_NUM * LOGUE_ROOM_COLUMN_NUM)
 
 #define LOGUE_ROOM_WIDTH_MAX (LOGUE_MAP_WIDTH  / LOGUE_ROOM_COLUMN_NUM)
 #define LOGUE_ROOM_HEIGHT_MAX (LOGUE_MAP_HEIGHT / LOGUE_ROOM_ROW_NUM)
 
 #define LOGUE_ROOM_MIN_SIZE 6
-
-typedef struct {
-    bool available;
-    uint16_t x;
-    uint16_t y;
-    uint16_t width;
-    uint16_t height;
-} logue_room_t;
 
 enum logue_corridor_direction {
     CORRIDOR_HORIZONTAL = 0,    // (-)
@@ -38,9 +30,11 @@ public:
     void make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t direction);
 
     void spawn_player(logue_map_t* map);
-    void spawn_enemy(logue_map_t* map, uint8_t difficulty);
-    void spawn_item(logue_map_t* map, uint8_t difficulty);
+    void spawn_enemies(logue_map_t* map, uint8_t num, uint8_t difficulty);
+    logue_enemy_t spawn_enemy(logue_map_t* map, uint8_t difficulty);
+    void spawn_items(logue_map_t* map, uint8_t num, uint8_t difficulty);
+    logue_item_t spawn_item(logue_map_t* map, uint8_t difficulty);
 
 private:
-    logue_room_t room[LOGUE_ROOM_NUM];
+    logue_room_t room[LOGUE_ROOM_GEN_NUM];
 };
