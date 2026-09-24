@@ -1,7 +1,9 @@
 #pragma once
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define LOGUE_MAP_WIDTH 30
 #define LOGUE_MAP_HEIGHT 30
@@ -63,14 +65,35 @@ enum logue_map_element {
     MAP_ITEM,
 };
 
+enum logue_cmd {
+    CMD_NONE = 0,
+    CMD_MOVE_UP,
+    CMD_MOVE_UP_LEFT,
+    CMD_MOVE_LEFT,
+    CMD_MOVE_DOWN_LEFT,
+    CMD_MOVE_DOWN,
+    CMD_MOVE_DOWN_RIGHT,
+    CMD_MOVE_RIGHT,
+    CMD_MOVE_UP_RIGHT,
+    CMD_ATTACK,
+    CMD_SEARCH,
+    CMD_USE,
+};
+
 class LogueCore {
 public:
     LogueCore(int seed);
 
     void initialize(void);
+    void set_map(logue_map_t* map);
+    void get_map(logue_map_t* map);
+
+    enum logue_map_element check_position(uint16_t x, uint16_t y);
+    void process_turn(enum logue_cmd cmd);
 
     int get_seed(void) { return core_data.seed; }
 
 private:
     logue_data_t core_data;
+    logue_map_t floor_info;
 };
