@@ -101,8 +101,9 @@ public:
     void set_map(logue_map_t* map);
     void get_map(logue_map_t* map);
 
-    enum logue_map_element check_position(uint16_t x, uint16_t y);
     void process_turn(enum logue_cmd cmd);
+    enum logue_map_element check_position(uint16_t x, uint16_t y);
+    enum logue_map_element move(uint16_t* x, uint16_t* y, int16_t dx, int16_t dy);
 
     int get_seed(void) { return core_data.seed; }
 
