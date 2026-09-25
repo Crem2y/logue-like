@@ -339,5 +339,17 @@ void LogueCore::pickup_item(uint16_t x, uint16_t y) {
 }
 
 void LogueCore::search(void) {
+    logue_player_t* player = &floor_info.players[0];
+
+    for (int16_t dy = -1; dy <= 1; dy++) {
+        for (int16_t dx = -1; dx <= 1; dx++) {
+            int16_t x = player->x + dx;
+            int16_t y = player->y + dy;
+
+            if (x < 0 || x >= LOGUE_MAP_WIDTH || y < 0 || y >= LOGUE_MAP_HEIGHT) continue;
+
+            floor_info.visibility[y][x] |= VIS_SEARCHED;
+        }
+    }
     printf("searched!\n");
 }
