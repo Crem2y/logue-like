@@ -79,23 +79,21 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         enum logue_map_element element = MAP_BLANK;
 
         direction_to_offset(player->direction, &dx, &dy);
-        element = check_terrain(player->x + dx, player->y + dy);
-        if(element != MAP_WALL) element = check_object(player->x + dx, player->y + dy);
+        int16_t target_x = player->x + dx;
+        int16_t target_y = player->y + dy;
 
-        switch (element) {
-        case MAP_WALL:
+        enum logue_map_element terrain = check_terrain(target_x, target_y);
+        enum logue_map_element object = check_object(target_x, target_y);
+
+        if (terrain == MAP_WALL) {
             printf("you attacked wall!\n");
-            break;
-        case MAP_ENEMY:
+        } else if (object == MAP_ENEMY) {
             printf("you attacked enemy!\n");
-            attack_enemy(player->x + dx, player->y + dy);
-            break;
-        case MAP_ITEM:
+            attack_enemy(target_x, target_y);
+        } else if (object == MAP_ITEM) {
             printf("you attacked item!\n");
-            break;
-        default:
+        } else {
             printf("you attacked nothing!\n");
-            break;
         }
         turn_result = TURN_PROCESSED;
         break;
@@ -212,22 +210,27 @@ enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int
     int16_t target_x = *x + dx;
     int16_t target_y = *y + dy;
 
-    enum logue_map_element element = check_terrain(target_x, target_y);
-    if(element != MAP_WALL) element = check_object(target_x, target_y);
+    enum logue_map_element terrain = check_terrain(target_x, target_y);
 
-    switch (element) {
-    case MAP_WALL:
+    if (terrain == MAP_WALL) return MAP_WALL;
+
+    enum logue_map_element object = check_object(target_x, target_y);
+
+    switch (object) {
     case MAP_PLAYER:
     case MAP_ENEMY:
-        break;
+        return object;
 
     default:
-        *x = target_x;
-        *y = target_y;
         break;
     }
 
-    return element;
+    *x = target_x;
+    *y = target_y;
+
+    if (object != MAP_BLANK) return object;
+
+    return terrain;
 }
 
 enum logue_map_element LogueCore::check_terrain(uint16_t x, uint16_t y) {
@@ -255,7 +258,7 @@ enum logue_map_element LogueCore::check_terrain(uint16_t x, uint16_t y) {
 
 enum logue_map_element LogueCore::check_object(uint16_t x, uint16_t y) {
     if (x >= LOGUE_MAP_WIDTH || y >= LOGUE_MAP_HEIGHT) {
-        return MAP_WALL;
+        return MAP_BLANK;
     }
 
     // check player
@@ -282,7 +285,7 @@ enum logue_map_element LogueCore::check_object(uint16_t x, uint16_t y) {
         }
     }
 
-    return MAP_FLOOR;
+    return MAP_BLANK;
 }
 
 int16_t LogueCore::get_room_at(uint16_t x, uint16_t y) {
