@@ -79,7 +79,8 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         enum logue_map_element element = MAP_BLANK;
 
         direction_to_offset(player->direction, &dx, &dy);
-        element = check_position(player->x + dx, player->y + dy);
+        element = check_terrain(player->x + dx, player->y + dy);
+        if(element != MAP_WALL) element = check_object(player->x + dx, player->y + dy);
 
         switch (element) {
         case MAP_WALL:
@@ -100,7 +101,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         break;
     }
     case CMD_SEARCH: {
-        enum logue_map_element element = check_position(player->x, player->y);
+        enum logue_map_element element = check_terrain(player->x, player->y);
         if(element == MAP_STAIR) {
             core_data.floor += 1;
             turn_result = TURN_NEXT_FLOOR;
@@ -211,7 +212,8 @@ enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int
     int16_t target_x = *x + dx;
     int16_t target_y = *y + dy;
 
-    enum logue_map_element element = check_position(target_x, target_y);
+    enum logue_map_element element = check_terrain(target_x, target_y);
+    if(element != MAP_WALL) element = check_object(target_x, target_y);
 
     switch (element) {
     case MAP_WALL:
@@ -228,7 +230,7 @@ enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int
     return element;
 }
 
-enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
+enum logue_map_element LogueCore::check_terrain(uint16_t x, uint16_t y) {
     if (x >= LOGUE_MAP_WIDTH || y >= LOGUE_MAP_HEIGHT) {
         return MAP_WALL;
     }
@@ -241,6 +243,19 @@ enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
     // check stair
     if(floor_info.map[y][x] == MAP_STAIR) {
         return MAP_STAIR;
+    }
+
+    // check other
+    if(floor_info.map[y][x] == MAP_FLOOR) {
+        return MAP_FLOOR;
+    }
+
+    return MAP_FLOOR;
+}
+
+enum logue_map_element LogueCore::check_object(uint16_t x, uint16_t y) {
+    if (x >= LOGUE_MAP_WIDTH || y >= LOGUE_MAP_HEIGHT) {
+        return MAP_WALL;
     }
 
     // check player
@@ -265,11 +280,6 @@ enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
         if(floor_info.items[i].x == x && floor_info.items[i].y == y) {
             return MAP_ITEM;
         }
-    }
-
-    // check other
-    if(floor_info.map[y][x] == MAP_FLOOR) {
-        return MAP_FLOOR;
     }
 
     return MAP_FLOOR;
