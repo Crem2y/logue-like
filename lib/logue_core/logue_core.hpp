@@ -127,6 +127,7 @@ public:
     enum logue_map_element move(uint16_t* x, uint16_t* y, int16_t dx, int16_t dy);
 
     int16_t get_room_at(uint16_t x, uint16_t y);
+    void direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy);
 
     void attack_enemy(uint16_t x, uint16_t y);
     void pickup_item(uint16_t x, uint16_t y);

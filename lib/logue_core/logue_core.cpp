@@ -42,6 +42,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
     enum logue_turn_result turn_result = TURN_NONE;
 
     logue_player_t player = floor_info.players[0];
+    bool is_movement_cmd = false;
 
     int16_t dx = 0;
     int16_t dy = 0;
@@ -49,43 +50,25 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
     switch (cmd) {
     case CMD_MOVE_UP:
         player.direction = DIRECTION_UP;
-        dy = -1;
+        is_movement_cmd = true;
         break;
     case CMD_MOVE_DOWN:
         player.direction = DIRECTION_DOWN;
-        dy = 1;
+        is_movement_cmd = true;
         break;
     case CMD_MOVE_LEFT:
         player.direction = DIRECTION_LEFT;
-        dx = -1;
+        is_movement_cmd = true;
         break;
     case CMD_MOVE_RIGHT:
         player.direction = DIRECTION_RIGHT;
-        dx = 1;
+        is_movement_cmd = true;
         break;
     case CMD_ATTACK: {
         enum logue_map_element element = MAP_BLANK;
-        uint16_t target_x = player.x;
-        uint16_t target_y = player.y;
-    
-        switch(player.direction) {
-        case DIRECTION_UP:
-            target_y -= 1;
-            break;
-        case DIRECTION_DOWN:
-            target_y += 1;
-            break;
-        case DIRECTION_LEFT:
-            target_x -= 1;
-            break;
-        case DIRECTION_RIGHT:
-            target_x += 1;
-            break;
-        default:
-            break;
-        }
 
-        element = check_position(target_x, target_y);
+        direction_to_offset(player.direction, &dx, &dy);
+        element = check_position(player.x + dx, player.y + dy);
 
         switch (element) {
         case MAP_WALL:
@@ -93,7 +76,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
             break;
         case MAP_ENEMY:
             printf("you attacked enemy!\n");
-            attack_enemy(target_x, target_y);
+            attack_enemy(player.x + dx, player.y + dy);
             break;
         case MAP_ITEM:
             printf("you attacked item!\n");
@@ -128,7 +111,8 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
     }
 
     // movement
-    if (dx != 0 || dy != 0) {
+    if (is_movement_cmd) {
+        direction_to_offset(player.direction, &dx, &dy);
         enum logue_map_element element = move(&player.x, &player.y, dx, dy);
 
         switch (element) {
@@ -194,22 +178,11 @@ void LogueCore::update_enemies(void) {
         direction &= 0xFE; // 8-direction to 4-direction
         enemy.direction = direction;
 
-        switch (direction) {
-        case DIRECTION_UP:
-            move(&enemy.x, &enemy.y, 0, -1);
-            break;
-        case DIRECTION_DOWN:
-            move(&enemy.x, &enemy.y, 0, 1);
-            break;
-        case DIRECTION_LEFT:
-            move(&enemy.x, &enemy.y, -1, 0);
-            break;
-        case DIRECTION_RIGHT:
-            move(&enemy.x, &enemy.y, 1, 0);
-            break;
-        default:
-            break;
-        }
+        int16_t dx = 0;
+        int16_t dy = 0;
+
+        direction_to_offset(direction, &dx, &dy);
+        move(&enemy.x, &enemy.y, dx, dy);
         
         floor_info.enemies[i] = enemy;
     }
@@ -298,6 +271,22 @@ int16_t LogueCore::get_room_at(uint16_t x, uint16_t y) {
     }
 
     return -1;
+}
+
+void LogueCore::direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy) {
+    *dx = 0;
+    *dy = 0;
+
+    switch (direction) {
+    case DIRECTION_UP:         *dy = -1; break;
+    case DIRECTION_UP_LEFT:    *dx = -1; *dy = -1; break;
+    case DIRECTION_LEFT:       *dx = -1; break;
+    case DIRECTION_DOWN_LEFT:  *dx = -1; *dy =  1; break;
+    case DIRECTION_DOWN:       *dy =  1; break;
+    case DIRECTION_DOWN_RIGHT: *dx =  1; *dy =  1; break;
+    case DIRECTION_RIGHT:      *dx =  1; break;
+    case DIRECTION_UP_RIGHT:   *dx =  1; *dy = -1; break;
+    }
 }
 
 void LogueCore::attack_enemy(uint16_t x, uint16_t y) {
