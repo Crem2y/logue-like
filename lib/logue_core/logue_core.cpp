@@ -33,88 +33,26 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
 
     logue_player_t player = floor_info.players[0];
 
-    // cmd process
+    int16_t dx = 0;
+    int16_t dy = 0;
+
     switch (cmd) {
-    case CMD_MOVE_UP: {
+    case CMD_MOVE_UP:
         player.direction = DIRECTION_UP;
-        enum logue_map_element element = move(&player.x, &player.y, 0, -1);
-        switch (element) {
-        case MAP_WALL:
-            printf("wall!\n");
-            break;
-        case MAP_ENEMY:
-            printf("enemy!\n");
-            break;
-        case MAP_ITEM:
-            pickup_item(player.x, player.y);
-            is_turn_processed = true;
-            break;
-        default:
-            is_turn_processed = true;
-            break;
-        }
+        dy = -1;
         break;
-    }
-    case CMD_MOVE_DOWN: {
+    case CMD_MOVE_DOWN:
         player.direction = DIRECTION_DOWN;
-        enum logue_map_element element = move(&player.x, &player.y, 0, 1);
-        switch (element) {
-        case MAP_WALL:
-            printf("wall!\n");
-            break;
-        case MAP_ENEMY:
-            printf("enemy!\n");
-            break;
-        case MAP_ITEM:
-            pickup_item(player.x, player.y);
-            is_turn_processed = true;
-            break;
-        default:
-            is_turn_processed = true;
-            break;
-        }
+        dy = 1;
         break;
-    }
-    case CMD_MOVE_LEFT: {
+    case CMD_MOVE_LEFT:
         player.direction = DIRECTION_LEFT;
-        enum logue_map_element element = move(&player.x, &player.y, -1, 0);
-        switch (element) {
-        case MAP_WALL:
-            printf("wall!\n");
-            break;
-        case MAP_ENEMY:
-            printf("enemy!\n");
-            break;
-        case MAP_ITEM:
-            pickup_item(player.x, player.y);
-            is_turn_processed = true;
-            break;
-        default:
-            is_turn_processed = true;
-            break;
-        }
+        dx = -1;
         break;
-    }
-    case CMD_MOVE_RIGHT: {
+    case CMD_MOVE_RIGHT:
         player.direction = DIRECTION_RIGHT;
-        enum logue_map_element element = move(&player.x, &player.y, 1, 0);
-        switch (element) {
-        case MAP_WALL:
-            printf("wall!\n");
-            break;
-        case MAP_ENEMY:
-            printf("enemy!\n");
-            break;
-        case MAP_ITEM:
-            pickup_item(player.x, player.y);
-            is_turn_processed = true;
-            break;
-        default:
-            is_turn_processed = true;
-            break;
-        }
+        dx = 1;
         break;
-    }
     case CMD_ATTACK: {
         enum logue_map_element element = MAP_BLANK;
         uint16_t target_x = player.x;
@@ -170,6 +108,27 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
     default:
         is_turn_processed = false;
         break;
+    }
+
+    // movement
+    if (dx != 0 || dy != 0) {
+        enum logue_map_element element = move(&player.x, &player.y, dx, dy);
+
+        switch (element) {
+        case MAP_WALL:
+            printf("wall!\n");
+            break;
+        case MAP_ENEMY:
+            printf("enemy!\n");
+            break;
+        case MAP_ITEM:
+            pickup_item(player.x, player.y);
+            is_turn_processed = true;
+            break;
+        default:
+            is_turn_processed = true;
+            break;
+        }
     }
 
     floor_info.players[0] = player;
