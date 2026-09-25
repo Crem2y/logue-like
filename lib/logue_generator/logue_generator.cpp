@@ -65,16 +65,16 @@ void LogueGenerator::reset_map(logue_map_t* map) {
         }
     }
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
-        map->room[i].available = false;
+        map->room[i] = {};
     }
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
-        map->players[i].available = false;
+        map->players[i] = {};
     }
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        map->enemies[i].available = false;
+        map->enemies[i] = {};
     }
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
-        map->items[i].available = false;
+        map->items[i] = {};
     }
 }
 

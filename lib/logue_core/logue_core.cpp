@@ -123,7 +123,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
     }
     case CMD_NONE_NO_TURN:
     default:
-        turn_result = TURN_PROCESSED;
+        turn_result = TURN_NONE;
         break;
     }
 

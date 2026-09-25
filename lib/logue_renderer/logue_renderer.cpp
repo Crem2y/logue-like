@@ -26,6 +26,7 @@ void LogueRenderer::render_map(logue_data_t* data, logue_map_t* map, logue_rende
             case MAP_PLAYER:
             case MAP_ENEMY:
             case MAP_ITEM:
+            case MAP_STAIR:
                 rendering_map[y][x] = MAP_FLOOR;
                 break;
 

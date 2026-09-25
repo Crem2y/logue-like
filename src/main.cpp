@@ -51,6 +51,7 @@ int main() {
     char input;
 
     while (1) {
+        result = TURN_NONE;
         scanf(" %c", &input);
 
         switch (input) {
