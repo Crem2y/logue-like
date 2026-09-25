@@ -5,7 +5,7 @@ const logue_renderer_config_t normal_config = {
     .stair  = RENDER_DISCOVERED,
     .player = RENDER_SEARCHED,
     .enemy  = RENDER_SEARCHED,
-    .item   = RENDER_SEARCHED,
+    .item   = RENDER_DISCOVERED,
 };
 
 const logue_renderer_config_t insight_config = {
@@ -35,7 +35,7 @@ int main() {
     logue_map_t logue_map;
     
     LogueRenderer Renderer = LogueRenderer();
-    logue_renderer_config_t render_config = normal_config;
+    logue_renderer_config_t render_config = insight_config;
 
     Core.initialize();
     Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test

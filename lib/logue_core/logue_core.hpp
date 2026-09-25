@@ -117,6 +117,9 @@ public:
 
     int16_t get_room_at(uint16_t x, uint16_t y);
 
+    void attack_enemy(uint16_t x, uint16_t y);
+    void pickup_item(uint16_t x, uint16_t y);
+
     int get_seed(void) { return core_data.seed; }
 
 private:

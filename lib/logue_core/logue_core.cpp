@@ -45,6 +45,10 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
         case MAP_ENEMY:
             printf("enemy!\n");
             break;
+        case MAP_ITEM:
+            pickup_item(player.x, player.y);
+            is_turn_processed = true;
+            break;
         default:
             is_turn_processed = true;
             break;
@@ -60,6 +64,10 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
             break;
         case MAP_ENEMY:
             printf("enemy!\n");
+            break;
+        case MAP_ITEM:
+            pickup_item(player.x, player.y);
+            is_turn_processed = true;
             break;
         default:
             is_turn_processed = true;
@@ -77,6 +85,10 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
         case MAP_ENEMY:
             printf("enemy!\n");
             break;
+        case MAP_ITEM:
+            pickup_item(player.x, player.y);
+            is_turn_processed = true;
+            break;
         default:
             is_turn_processed = true;
             break;
@@ -93,6 +105,10 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
         case MAP_ENEMY:
             printf("enemy!\n");
             break;
+        case MAP_ITEM:
+            pickup_item(player.x, player.y);
+            is_turn_processed = true;
+            break;
         default:
             is_turn_processed = true;
             break;
@@ -101,22 +117,27 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
     }
     case CMD_ATTACK: {
         enum logue_map_element element = MAP_BLANK;
+        uint16_t target_x = player.x;
+        uint16_t target_y = player.y;
+    
         switch(player.direction) {
         case DIRECTION_UP:
-            element = check_position(player.x, player.y-1);
+            target_y -= 1;
             break;
         case DIRECTION_DOWN:
-            element = check_position(player.x, player.y+1);
+            target_y += 1;
             break;
         case DIRECTION_LEFT:
-            element = check_position(player.x-1, player.y);
+            target_x -= 1;
             break;
         case DIRECTION_RIGHT:
-            element = check_position(player.x+1, player.y);
+            target_x += 1;
             break;
         default:
             break;
         }
+
+        element = check_position(target_x, target_y);
 
         switch (element) {
         case MAP_WALL:
@@ -124,6 +145,10 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
             break;
         case MAP_ENEMY:
             printf("you attacked enemy!\n");
+            attack_enemy(target_x, target_y);
+            break;
+        case MAP_ITEM:
+            printf("you attacked item!\n");
             break;
         default:
             printf("you attacked nothing!\n");
@@ -295,4 +320,32 @@ int16_t LogueCore::get_room_at(uint16_t x, uint16_t y) {
     }
 
     return -1;
+}
+
+void LogueCore::attack_enemy(uint16_t x, uint16_t y) {
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
+        logue_enemy_t* enemy = &floor_info.enemies[i];
+
+        if (!enemy->available) continue;
+
+        if (enemy->x == x && enemy->y == y) {
+            enemy->available = false; //test, hp 1 enemy...
+            printf("defeated the enemy!\n");
+            return;
+        }
+    }
+}
+
+void LogueCore::pickup_item(uint16_t x, uint16_t y) {
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
+        logue_item_t* item = &floor_info.items[i];
+
+        if (!item->available) continue;
+
+        if (item->x == x && item->y == y) {
+            item->available = false;
+            printf("picked up item!\n");
+            return;
+        }
+    }
 }
