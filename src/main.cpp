@@ -36,7 +36,7 @@ int main() {
     logue_map_t logue_map;
     
     LogueRenderer Renderer = LogueRenderer();
-    logue_renderer_config_t render_config = debugging_config;
+    logue_renderer_config_t render_config = normal_config;
 
     Core.initialize();
     Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test. difficulty is 0

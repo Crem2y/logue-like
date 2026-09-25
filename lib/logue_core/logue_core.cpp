@@ -29,11 +29,22 @@ enum logue_turn_result LogueCore::process_turn(enum logue_cmd cmd) {
 
     turn_result = update_player(cmd);
 
-    update_visibility();
-
-    if(turn_result != TURN_PROCESSED) return turn_result;
+    if(turn_result != TURN_PROCESSED) {
+        update_visibility();
+        return turn_result;
+    }
 
     update_enemies();
+    update_visibility();
+
+    turn_result = check_game_state();
+    if(turn_result != TURN_PROCESSED) {
+        return turn_result;
+    }
+
+    if (cmd == CMD_SEARCH) {
+        search();
+    }
 
     return turn_result;
 }
@@ -41,7 +52,7 @@ enum logue_turn_result LogueCore::process_turn(enum logue_cmd cmd) {
 enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
     enum logue_turn_result turn_result = TURN_NONE;
 
-    logue_player_t player = floor_info.players[0];
+    logue_player_t* player = &floor_info.players[0];
     bool is_movement_cmd = false;
 
     int16_t dx = 0;
@@ -49,26 +60,26 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
 
     switch (cmd) {
     case CMD_MOVE_UP:
-        player.direction = DIRECTION_UP;
+        player->direction = DIRECTION_UP;
         is_movement_cmd = true;
         break;
     case CMD_MOVE_DOWN:
-        player.direction = DIRECTION_DOWN;
+        player->direction = DIRECTION_DOWN;
         is_movement_cmd = true;
         break;
     case CMD_MOVE_LEFT:
-        player.direction = DIRECTION_LEFT;
+        player->direction = DIRECTION_LEFT;
         is_movement_cmd = true;
         break;
     case CMD_MOVE_RIGHT:
-        player.direction = DIRECTION_RIGHT;
+        player->direction = DIRECTION_RIGHT;
         is_movement_cmd = true;
         break;
     case CMD_ATTACK: {
         enum logue_map_element element = MAP_BLANK;
 
-        direction_to_offset(player.direction, &dx, &dy);
-        element = check_position(player.x + dx, player.y + dy);
+        direction_to_offset(player->direction, &dx, &dy);
+        element = check_position(player->x + dx, player->y + dy);
 
         switch (element) {
         case MAP_WALL:
@@ -76,7 +87,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
             break;
         case MAP_ENEMY:
             printf("you attacked enemy!\n");
-            attack_enemy(player.x + dx, player.y + dy);
+            attack_enemy(player->x + dx, player->y + dy);
             break;
         case MAP_ITEM:
             printf("you attacked item!\n");
@@ -89,14 +100,14 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         break;
     }
     case CMD_SEARCH: {
-        printf("searched!\n");
-        enum logue_map_element element = check_position(player.x, player.y);
+        enum logue_map_element element = check_position(player->x, player->y);
         if(element == MAP_STAIR) {
             core_data.floor += 1;
             turn_result = TURN_NEXT_FLOOR;
             printf("you moved to the next floor\n");
         } else {
             turn_result = TURN_PROCESSED;
+            printf("searching...\n");
         }
         break;
     }
@@ -112,8 +123,8 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
 
     // movement
     if (is_movement_cmd) {
-        direction_to_offset(player.direction, &dx, &dy);
-        enum logue_map_element element = move(&player.x, &player.y, dx, dy);
+        direction_to_offset(player->direction, &dx, &dy);
+        enum logue_map_element element = move(&player->x, &player->y, dx, dy);
 
         switch (element) {
         case MAP_WALL:
@@ -123,7 +134,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
             printf("you bumped into enemy!\n");
             break;
         case MAP_ITEM:
-            pickup_item(player.x, player.y);
+            pickup_item(player->x, player->y);
             turn_result = TURN_PROCESSED;
             break;
         default:
@@ -132,13 +143,11 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         }
     }
 
-    floor_info.players[0] = player;
-
     return turn_result;
 }
 
 void LogueCore::update_visibility(void) {
-    logue_player_t player = floor_info.players[0];
+    logue_player_t* player = &floor_info.players[0];
 
     // update visibility
     for(uint16_t i=0; i<LOGUE_MAP_HEIGHT; i++) {
@@ -149,21 +158,21 @@ void LogueCore::update_visibility(void) {
 
     for (int16_t dy = -1; dy <= 1; dy++) {
         for (int16_t dx = -1; dx <= 1; dx++) {
-            int16_t x = player.x + dx;
-            int16_t y = player.y + dy;
+            int16_t x = player->x + dx;
+            int16_t y = player->y + dy;
 
             if (x < 0 || x >= LOGUE_MAP_WIDTH || y < 0 || y >= LOGUE_MAP_HEIGHT) continue;
 
-            floor_info.visibility[y][x] = (VIS_DISCOVERED | VIS_VISIBLE);
+            floor_info.visibility[y][x] |= (VIS_DISCOVERED | VIS_VISIBLE);
         }
     }
 
-    int16_t room_num = get_room_at(player.x, player.y);
+    int16_t room_num = get_room_at(player->x, player->y);
     if(room_num > -1) {
         logue_room_t room = floor_info.room[room_num];
         for(uint16_t i=0; i<room.height+1; i++) {
             for(uint16_t j=0; j<room.width+1; j++) {
-                floor_info.visibility[room.y+i][room.x+j] = (VIS_DISCOVERED | VIS_VISIBLE);
+                floor_info.visibility[room.y+i][room.x+j] |= (VIS_DISCOVERED | VIS_VISIBLE);
             }
         }
     }
@@ -186,6 +195,18 @@ void LogueCore::update_enemies(void) {
         
         floor_info.enemies[i] = enemy;
     }
+}
+
+enum logue_turn_result LogueCore::check_game_state(void) {
+    enum logue_turn_result turn_result = TURN_PROCESSED;
+
+    logue_player_t* player = &floor_info.players[0];
+
+    if (!player->available) {
+        return TURN_GAME_OVER;
+    }
+
+    return turn_result;
 }
 
 enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int16_t dy) {
@@ -315,4 +336,8 @@ void LogueCore::pickup_item(uint16_t x, uint16_t y) {
             return;
         }
     }
+}
+
+void LogueCore::search(void) {
+    printf("searched!\n");
 }

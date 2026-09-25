@@ -123,6 +123,7 @@ public:
     enum logue_turn_result update_player(enum logue_cmd cmd);
     void update_visibility(void);
     void update_enemies(void);
+    enum logue_turn_result check_game_state(void);
     enum logue_map_element check_position(uint16_t x, uint16_t y);
     enum logue_map_element move(uint16_t* x, uint16_t* y, int16_t dx, int16_t dy);
 
@@ -131,6 +132,7 @@ public:
 
     void attack_enemy(uint16_t x, uint16_t y);
     void pickup_item(uint16_t x, uint16_t y);
+    void search(void);
 
     int get_seed(void) { return core_data.seed; }
 
