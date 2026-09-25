@@ -2,10 +2,10 @@
 
 const logue_renderer_config_t normal_config = {
     .map    = RENDER_DISCOVERED,
-    .stair  = RENDER_DISCOVERED,
+    .stair  = RENDER_VISIBLE,
     .player = RENDER_SEARCHED,
     .enemy  = RENDER_SEARCHED,
-    .item   = RENDER_DISCOVERED,
+    .item   = RENDER_VISIBLE,
 };
 
 const logue_renderer_config_t insight_config = {
@@ -36,7 +36,7 @@ int main() {
     logue_map_t logue_map;
     
     LogueRenderer Renderer = LogueRenderer();
-    logue_renderer_config_t render_config = insight_config;
+    logue_renderer_config_t render_config = normal_config;
 
     Core.initialize();
     Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test. difficulty is 0
