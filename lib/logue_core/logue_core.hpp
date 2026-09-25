@@ -16,6 +16,7 @@
 
 typedef struct {
     int seed;
+    uint8_t floor;
 } logue_data_t;
 
 typedef struct {
@@ -100,6 +101,14 @@ enum logue_cmd {
     CMD_USE,
 };
 
+enum logue_turn_result {
+    TURN_NONE = 0,
+    TURN_PROCESSED,
+    TURN_NEXT_FLOOR,
+    TURN_GAME_OVER,
+    TURN_GAME_CLEAR,
+};
+
 class LogueCore {
 public:
     LogueCore(int seed);
@@ -107,9 +116,11 @@ public:
     void initialize(void);
     void set_map(logue_map_t* map);
     void get_map(logue_map_t* map);
+    void set_data(logue_data_t* data);
+    void get_data(logue_data_t* data);
 
-    void process_turn(enum logue_cmd cmd);
-    bool update_player(enum logue_cmd cmd);
+    enum logue_turn_result process_turn(enum logue_cmd cmd);
+    enum logue_turn_result update_player(enum logue_cmd cmd);
     void update_visibility(void);
     void update_enemies(void);
     enum logue_map_element check_position(uint16_t x, uint16_t y);

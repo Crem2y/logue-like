@@ -5,7 +5,7 @@ LogueCore::LogueCore(int seed) {
 }
 
 void LogueCore::initialize(void) {
-
+    core_data.floor = 1;   
 }
 
 void LogueCore::set_map(logue_map_t* map) {
@@ -16,20 +16,30 @@ void LogueCore::get_map(logue_map_t* map) {
     memcpy(map, &floor_info, sizeof(logue_map_t));
 }
 
-void LogueCore::process_turn(enum logue_cmd cmd) {
-    bool is_turn_processed = false;
+void LogueCore::set_data(logue_data_t* data) {
+    memcpy(&core_data, data, sizeof(logue_data_t));
+}
 
-    is_turn_processed = update_player(cmd);
+void LogueCore::get_data(logue_data_t* data) {
+    memcpy(data, &core_data, sizeof(logue_data_t));
+}
+
+enum logue_turn_result LogueCore::process_turn(enum logue_cmd cmd) {
+    enum logue_turn_result turn_result = TURN_NONE;
+
+    turn_result = update_player(cmd);
 
     update_visibility();
 
-    if(!is_turn_processed) return;
+    if(turn_result != TURN_PROCESSED) return turn_result;
 
     update_enemies();
+
+    return turn_result;
 }
 
-bool LogueCore::update_player(enum logue_cmd cmd) {
-    bool is_turn_processed = false;
+enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
+    enum logue_turn_result turn_result = TURN_NONE;
 
     logue_player_t player = floor_info.players[0];
 
@@ -92,21 +102,27 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
             printf("you attacked nothing!\n");
             break;
         }
-        is_turn_processed = true;
+        turn_result = TURN_PROCESSED;
         break;
     }
     case CMD_SEARCH: {
         printf("searched!\n");
-        is_turn_processed = true;
+        enum logue_map_element element = check_position(player.x, player.y);
+        if(element == MAP_STAIR) {
+            core_data.floor += 1;
+            turn_result = TURN_NEXT_FLOOR;
+        } else {
+            turn_result = TURN_PROCESSED;
+        }
         break;
     }
     case CMD_NONE: {
-        is_turn_processed = true;
+        turn_result = TURN_PROCESSED;
         break;
     }
     case CMD_NONE_NO_TURN:
     default:
-        is_turn_processed = false;
+        turn_result = TURN_PROCESSED;
         break;
     }
 
@@ -123,17 +139,17 @@ bool LogueCore::update_player(enum logue_cmd cmd) {
             break;
         case MAP_ITEM:
             pickup_item(player.x, player.y);
-            is_turn_processed = true;
+            turn_result = TURN_PROCESSED;
             break;
         default:
-            is_turn_processed = true;
+            turn_result = TURN_PROCESSED;
             break;
         }
     }
 
     floor_info.players[0] = player;
 
-    return is_turn_processed;
+    return turn_result;
 }
 
 void LogueCore::update_visibility(void) {
@@ -229,6 +245,11 @@ enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
         return MAP_WALL;
     }
 
+    // check stair
+    if(floor_info.map[y][x] == MAP_STAIR) {
+        return MAP_STAIR;
+    }
+
     // check player
     for(uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
         if(!floor_info.players[i].available) continue;
@@ -254,9 +275,6 @@ enum logue_map_element LogueCore::check_position(uint16_t x, uint16_t y) {
     }
 
     // check other
-    if(floor_info.map[y][x] == MAP_STAIR) {
-        return MAP_STAIR;
-    }
     if(floor_info.map[y][x] == MAP_FLOOR) {
         return MAP_FLOOR;
     }

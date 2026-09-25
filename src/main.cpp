@@ -30,6 +30,7 @@ int main() {
     int seed = rand();
 
     LogueCore Core = LogueCore(seed);
+    logue_data_t logue_data;
 
     LogueGenerator Mapgen = LogueGenerator();
     logue_map_t logue_map;
@@ -42,9 +43,11 @@ int main() {
     Core.set_map(&logue_map);
 
     Core.process_turn(CMD_NONE_NO_TURN);
+    Core.get_data(&logue_data);
     Core.get_map(&logue_map);
-    Renderer.render_map(&logue_map, &render_config);
+    Renderer.render_map(&logue_data, &logue_map, &render_config);
 
+    enum logue_turn_result result;
     char input;
 
     while (1) {
@@ -52,29 +55,52 @@ int main() {
 
         switch (input) {
         case 'w':
-            Core.process_turn(CMD_MOVE_UP);
+            result = Core.process_turn(CMD_MOVE_UP);
             break;
         case 's':
-            Core.process_turn(CMD_MOVE_DOWN);
+            result = Core.process_turn(CMD_MOVE_DOWN);
             break;
         case 'a':
-            Core.process_turn(CMD_MOVE_LEFT);
+            result = Core.process_turn(CMD_MOVE_LEFT);
             break;
         case 'd':
-            Core.process_turn(CMD_MOVE_RIGHT);
+            result = Core.process_turn(CMD_MOVE_RIGHT);
             break;
         case 'h':
-            Core.process_turn(CMD_ATTACK);
+            result = Core.process_turn(CMD_ATTACK);
             break;
         case 'g':
-            Core.process_turn(CMD_SEARCH);
+            result = Core.process_turn(CMD_SEARCH);
             break;
         default:
             break;
         }
 
-        Core.get_map(&logue_map);
-        Renderer.render_map(&logue_map, &render_config);
+        switch (result)
+        {
+        case TURN_NONE:
+        case TURN_PROCESSED:
+            Core.get_data(&logue_data);
+            Core.get_map(&logue_map);
+            Renderer.render_map(&logue_data, &logue_map, &render_config);
+            break;
+        case TURN_NEXT_FLOOR:
+            Mapgen.generate_map(&logue_map, rand(), 0); //test
+            Core.set_map(&logue_map);
+            Core.process_turn(CMD_NONE_NO_TURN);
+
+            Core.get_data(&logue_data);
+            Core.get_map(&logue_map);
+            Renderer.render_map(&logue_data, &logue_map, &render_config);
+            break;
+        case TURN_GAME_OVER:
+            printf("game over...\n");
+            return 0;
+        default:
+            break;
+        }
+
+
     }
 
     return 0;

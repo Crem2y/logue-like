@@ -27,6 +27,6 @@ class LogueRenderer {
 public:
     LogueRenderer(void);
 
-    void render_map(logue_map_t* map, logue_renderer_config_t* config);
+    void render_map(logue_data_t* data, logue_map_t* map, logue_renderer_config_t* config);
     bool is_renderable(uint8_t visibility, uint8_t config);
 };

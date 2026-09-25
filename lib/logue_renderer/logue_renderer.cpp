@@ -4,10 +4,11 @@ LogueRenderer::LogueRenderer() {
 
 }
 
-void LogueRenderer::render_map(logue_map_t* map, logue_renderer_config_t* config) {
+void LogueRenderer::render_map(logue_data_t* data, logue_map_t* map, logue_renderer_config_t* config) {
     if(map == NULL || config == NULL) return;
 
     printf("map seed = %d, map difficulty = %d\n", map->seed, map->difficulty); //test
+    printf("floor %d\n", data->floor);
 
     uint8_t rendering_map[LOGUE_MAP_HEIGHT][LOGUE_MAP_WIDTH];
 
