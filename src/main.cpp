@@ -39,7 +39,7 @@ int main() {
     logue_renderer_config_t render_config = insight_config;
 
     Core.initialize();
-    Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test
+    Mapgen.generate_map(&logue_map, Core.get_seed(), 0); //test. difficulty is 0
     Core.set_map(&logue_map);
 
     Core.process_turn(CMD_NONE_NO_TURN);
@@ -85,7 +85,7 @@ int main() {
             Renderer.render_map(&logue_data, &logue_map, &render_config);
             break;
         case TURN_NEXT_FLOOR:
-            Mapgen.generate_map(&logue_map, rand(), 0); //test
+            Mapgen.generate_map(&logue_map, rand(), 0); //test. difficulty is 0
             Core.set_map(&logue_map);
             Core.process_turn(CMD_NONE_NO_TURN);
 

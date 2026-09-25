@@ -111,6 +111,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         if(element == MAP_STAIR) {
             core_data.floor += 1;
             turn_result = TURN_NEXT_FLOOR;
+            printf("you moved to the next floor");
         } else {
             turn_result = TURN_PROCESSED;
         }
@@ -132,10 +133,10 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
 
         switch (element) {
         case MAP_WALL:
-            printf("wall!\n");
+            printf("you bumped into wall!\n");
             break;
         case MAP_ENEMY:
-            printf("enemy!\n");
+            printf("you bumped into enemy!\n");
             break;
         case MAP_ITEM:
             pickup_item(player.x, player.y);
@@ -307,7 +308,7 @@ void LogueCore::attack_enemy(uint16_t x, uint16_t y) {
 
         if (enemy->x == x && enemy->y == y) {
             enemy->available = false; //test, hp 1 enemy...
-            printf("defeated the enemy!\n");
+            printf("you defeated the enemy!\n");
             return;
         }
     }
@@ -321,7 +322,7 @@ void LogueCore::pickup_item(uint16_t x, uint16_t y) {
 
         if (item->x == x && item->y == y) {
             item->available = false;
-            printf("picked up item!\n");
+            printf("you picked up item!\n");
             return;
         }
     }
