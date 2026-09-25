@@ -180,20 +180,18 @@ void LogueCore::update_visibility(void) {
 
 void LogueCore::update_enemies(void) {
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        logue_enemy_t enemy = floor_info.enemies[i];
-        if(!enemy.available) continue;
+        logue_enemy_t* enemy = &floor_info.enemies[i];
+        if(!enemy->available) continue;
 
         uint8_t direction = rand() % 8;
         direction &= 0xFE; // 8-direction to 4-direction
-        enemy.direction = direction;
+        enemy->direction = direction;
 
         int16_t dx = 0;
         int16_t dy = 0;
 
         direction_to_offset(direction, &dx, &dy);
-        move(&enemy.x, &enemy.y, dx, dy);
-        
-        floor_info.enemies[i] = enemy;
+        move(&enemy->x, &enemy->y, dx, dy);
     }
 }
 
