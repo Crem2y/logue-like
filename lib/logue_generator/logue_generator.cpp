@@ -11,10 +11,42 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
     srand(map->seed);
     rand();
 
-    // resetting map
-    reset_map(map);
+    do {
+        reset_map(map);
+        make_rooms(map);
+        make_corridors(map);
+        validate_rooms(map);
+    } while (!is_valid_map(map));
 
-    // make rooms
+    spawn_stair(map);
+    spawn_player(map);
+    spawn_enemies(map, LOGUE_MAP_MAX_ENEMIES, difficulty);
+    spawn_items(map, LOGUE_MAP_MAX_ITEMS, difficulty);
+}
+
+void LogueGenerator::reset_map(logue_map_t* map) {
+    for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
+        for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
+            map->map[y][x] = MAP_BLANK;
+            map->visibility[y][x] = 0;
+        }
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
+        map->room[i] = {};
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
+        map->players[i] = {};
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
+        map->enemies[i] = {};
+    }
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
+        map->items[i] = {};
+    }
+    memset(room_connection, 0, sizeof(room_connection));
+}
+
+void LogueGenerator::make_rooms(logue_map_t* map) {
     for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
         logue_room_t room = {};
 
@@ -48,33 +80,6 @@ void LogueGenerator::generate_map(logue_map_t* map, int seed, uint8_t difficulty
     
         map->room[i] = room;
         make_room(map, &room);
-    }
-    make_corridors(map);
-    spawn_stair(map);
-
-    spawn_player(map);
-    spawn_enemies(map, LOGUE_MAP_MAX_ENEMIES, difficulty);
-    spawn_items(map, LOGUE_MAP_MAX_ITEMS, difficulty);
-}
-
-void LogueGenerator::reset_map(logue_map_t* map) {
-    for (uint16_t y = 0; y < LOGUE_MAP_HEIGHT; y++) {
-        for (uint16_t x = 0; x < LOGUE_MAP_WIDTH; x++) {
-            map->map[y][x] = MAP_BLANK;
-            map->visibility[y][x] = 0;
-        }
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ROOMS; i++) {
-        map->room[i] = {};
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
-        map->players[i] = {};
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        map->enemies[i] = {};
-    }
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
-        map->items[i] = {};
     }
 }
 
@@ -118,6 +123,8 @@ void LogueGenerator::make_corridors(logue_map_t* map) {
                 uint16_t y2 = east->y + 1 + rand() % (east->height - 2);
 
                 make_corridor(map, x1, y1, x2, y2, CORRIDOR_HORIZONTAL);
+                room_connection[i][i + 1] = true;
+                room_connection[i + 1][i] = true;
             }
         }
 
@@ -135,6 +142,8 @@ void LogueGenerator::make_corridors(logue_map_t* map) {
                 uint16_t y2 = south->y;
 
                 make_corridor(map, x1, y1, x2, y2, CORRIDOR_VERTICAL);
+                room_connection[i][i + LOGUE_ROOM_COLUMN_NUM] = true;
+                room_connection[i + LOGUE_ROOM_COLUMN_NUM][i] = true;
             }
         }
     }
@@ -207,6 +216,62 @@ void LogueGenerator::make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, u
     default:
         break;
     }
+}
+
+void LogueGenerator::validate_rooms(logue_map_t* map) {
+    bool best_component[LOGUE_ROOM_GEN_NUM] = {};
+    uint16_t best_count = 0;
+
+    for (uint16_t start = 0; start < LOGUE_ROOM_GEN_NUM; start++) {
+        if (!map->room[start].available) continue;
+
+        bool visited[LOGUE_ROOM_GEN_NUM] = {};
+        uint16_t stack[LOGUE_ROOM_GEN_NUM];
+        uint16_t stack_size = 0;
+        uint16_t count = 0;
+
+        stack[stack_size++] = start;
+        visited[start] = true;
+
+        while (stack_size > 0) {
+            uint16_t current = stack[--stack_size];
+            count++;
+
+            for (uint16_t next = 0; next < LOGUE_ROOM_GEN_NUM; next++) {
+                if (!map->room[next].available) continue;
+
+                if (!room_connection[current][next]) continue;
+
+                if (visited[next]) continue;
+
+                visited[next] = true;
+                stack[stack_size++] = next;
+            }
+        }
+
+        if (count > best_count) {
+            best_count = count;
+            memcpy(best_component, visited, sizeof(best_component));
+        }
+    }
+
+    for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
+        if (map->room[i].available && !best_component[i]) {
+            map->room[i].available = false;
+        }
+    }
+}
+
+bool LogueGenerator::is_valid_map(logue_map_t* map) {
+    uint16_t room_count = 0;
+
+    // check room num
+    for (uint16_t i = 0; i < LOGUE_ROOM_GEN_NUM; i++) {
+        if (map->room[i].available)
+            room_count++;
+    }
+
+    return room_count >= LOGUE_ROOM_MIN_NUM;
 }
 
 void LogueGenerator::spawn_stair(logue_map_t* map) {

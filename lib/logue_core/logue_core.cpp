@@ -94,7 +94,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         if(element == MAP_STAIR) {
             core_data.floor += 1;
             turn_result = TURN_NEXT_FLOOR;
-            printf("you moved to the next floor");
+            printf("you moved to the next floor\n");
         } else {
             turn_result = TURN_PROCESSED;
         }

@@ -8,6 +8,7 @@
 #define LOGUE_ROOM_ROW_NUM 3 // -
 #define LOGUE_ROOM_COLUMN_NUM 3 // |
 #define LOGUE_ROOM_GEN_NUM (LOGUE_ROOM_ROW_NUM * LOGUE_ROOM_COLUMN_NUM)
+#define LOGUE_ROOM_MIN_NUM 4
 
 #define LOGUE_ROOM_WIDTH_MAX (LOGUE_MAP_WIDTH  / LOGUE_ROOM_COLUMN_NUM)
 #define LOGUE_ROOM_HEIGHT_MAX (LOGUE_MAP_HEIGHT / LOGUE_ROOM_ROW_NUM)
@@ -27,9 +28,12 @@ public:
 
     void generate_map(logue_map_t* map, int seed, uint8_t difficulty);
     void reset_map(logue_map_t* map);
+    void make_rooms(logue_map_t* map);
     void make_room(logue_map_t* map, logue_room_t* room);
     void make_corridors(logue_map_t* map);
     void make_corridor(logue_map_t *map, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t direction);
+    void validate_rooms(logue_map_t* map);
+    bool is_valid_map(logue_map_t* map);
 
     void spawn_stair(logue_map_t* map);
     void spawn_player(logue_map_t* map);
@@ -42,4 +46,5 @@ public:
 
 private:
     logue_room_t room[LOGUE_ROOM_GEN_NUM];
+    bool room_connection[LOGUE_ROOM_GEN_NUM][LOGUE_ROOM_GEN_NUM];
 };
