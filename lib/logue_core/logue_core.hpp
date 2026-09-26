@@ -113,6 +113,17 @@ enum logue_turn_result {
     TURN_GAME_CLEAR,
 };
 
+enum logue_actor_type {
+    ACTOR_NONE = 0,
+    ACTOR_PLAYER,
+    ACTOR_ENEMY,
+};
+
+typedef struct {
+    enum logue_actor_type type;
+    uint16_t index;
+} logue_actor_ref_t;
+
 class LogueCore {
 public:
     LogueCore(int seed);
@@ -135,7 +146,8 @@ public:
     int16_t get_room_at(uint16_t x, uint16_t y);
     void direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy);
 
-    void attack_enemy(uint16_t x, uint16_t y);
+    logue_actor_ref_t get_actor_at(uint16_t x, uint16_t y);
+    void attack(logue_actor_ref_t attacker, logue_actor_ref_t target);
     void pickup_item(uint16_t x, uint16_t y);
     void search(void);
 

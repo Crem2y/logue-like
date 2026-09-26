@@ -89,7 +89,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
             printf("you attacked wall!\n");
         } else if (object == MAP_ENEMY) {
             printf("you attacked enemy!\n");
-            attack_enemy(target_x, target_y);
+            attack((logue_actor_ref_t){ACTOR_PLAYER, 0}, get_actor_at(target_x, target_y));
         } else if (object == MAP_ITEM) {
             printf("you attacked item!\n");
         } else {
@@ -190,7 +190,12 @@ void LogueCore::update_enemies(void) {
         int16_t dy = 0;
 
         direction_to_offset(direction, &dx, &dy);
-        move(&enemy->x, &enemy->y, dx, dy);
+        enum logue_map_element element = move(&enemy->x, &enemy->y, dx, dy);
+
+        //test
+        if(element == MAP_PLAYER) {
+            attack((logue_actor_ref_t){ACTOR_ENEMY, i}, (logue_actor_ref_t){ACTOR_PLAYER, 0});
+        }
     }
 }
 
@@ -321,17 +326,51 @@ void LogueCore::direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy)
     }
 }
 
-void LogueCore::attack_enemy(uint16_t x, uint16_t y) {
+logue_actor_ref_t LogueCore::get_actor_at(uint16_t x, uint16_t y) {
+    logue_actor_ref_t actor = {ACTOR_NONE, 0};
+
+    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
+        logue_player_t* player = &floor_info.players[i];
+
+        if (!player->available)
+            continue;
+
+        if (player->x == x && player->y == y) {
+            logue_actor_ref_t actor = {ACTOR_PLAYER, i};
+            return actor;
+        }
+    }
+
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
         logue_enemy_t* enemy = &floor_info.enemies[i];
 
-        if (!enemy->available) continue;
+        if (!enemy->available)
+            continue;
 
         if (enemy->x == x && enemy->y == y) {
-            enemy->available = false; //test, hp 1 enemy...
-            printf("you defeated the enemy!\n");
-            return;
+            logue_actor_ref_t actor = {ACTOR_ENEMY, i};
+            return actor;
         }
+    }
+
+    return actor;
+}
+
+void LogueCore::attack(logue_actor_ref_t attacker, logue_actor_ref_t target) {
+    switch (target.type) {
+    case ACTOR_PLAYER:
+        if (target.index >= LOGUE_MAP_MAX_PLAYERS) return;
+
+        floor_info.players[target.index].available = false;
+        printf("you have been attacked!\n");
+        break;
+
+    case ACTOR_ENEMY:
+        if (target.index >= LOGUE_MAP_MAX_ENEMIES) return;
+
+        floor_info.enemies[target.index].available = false;
+        printf("you defeated the enemy!\n");
+        break;
     }
 }
 
