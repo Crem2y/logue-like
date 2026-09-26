@@ -86,7 +86,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         if (terrain == MAP_WALL) {
             printf("you attacked a wall!\n");
         } else if (object.type == MAP_ENEMY) {
-            printf("you attacked an enemy!\n");
+            //printf("you attacked an enemy!\n");
             attack((logue_object_ref_t){MAP_PLAYER, 0}, object);
         } else if (object.type == MAP_ITEM) {
             printf("you attacked an item!\n");
@@ -203,7 +203,6 @@ enum logue_turn_result LogueCore::check_game_state(void) {
     logue_player_t* player = &floor_info.players[0];
 
     if (!player->available) {
-        printf("you died\n");
         return TURN_GAME_OVER;
     }
 
@@ -330,20 +329,53 @@ void LogueCore::direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy)
 }
 
 void LogueCore::attack(logue_object_ref_t attacker, logue_object_ref_t target) {
-    switch (target.type) {
-    case MAP_PLAYER:
-        if (target.index >= LOGUE_MAP_MAX_PLAYERS) return;
+    int16_t damage = 0;
 
-        floor_info.players[target.index].available = false;
-        printf("you were attacked!\n");
+    switch (attacker.type) {
+    case MAP_PLAYER:
+        if (attacker.index < 0 || attacker.index >= LOGUE_MAP_MAX_PLAYERS) return;
+
+        damage = floor_info.players[attacker.index].power;
         break;
 
     case MAP_ENEMY:
-        if (target.index >= LOGUE_MAP_MAX_ENEMIES) return;
+        if (attacker.index < 0 || attacker.index >= LOGUE_MAP_MAX_ENEMIES) return;
 
-        floor_info.enemies[target.index].available = false;
-        printf("you defeated the enemy!\n");
+        damage = floor_info.enemies[attacker.index].power;
         break;
+    }
+
+    switch (target.type) {
+    case MAP_PLAYER: {
+        if (target.index < 0 || target.index >= LOGUE_MAP_MAX_PLAYERS) return;
+
+        logue_player_t* player = &floor_info.players[target.index];
+
+        player->hp -= damage;
+        printf("you were attacked! (%d)\n", -damage);
+
+        if (player->hp <= 0) {
+            player->hp = 0;
+            player->available = false;
+            printf("you died\n");
+        }
+        break;
+    }
+    case MAP_ENEMY: {
+        if (target.index < 0 || target.index >= LOGUE_MAP_MAX_ENEMIES) return;
+
+        logue_enemy_t* enemy = &floor_info.enemies[target.index];
+
+        enemy->hp -= damage;
+        printf("you attacked an enemy! (%d)\n", -damage);
+
+        if (enemy->hp <= 0) {
+            enemy->hp = 0;
+            enemy->available = false;
+            printf("you defeated the enemy!\n");
+        }
+        break;
+    }
     }
 }
 

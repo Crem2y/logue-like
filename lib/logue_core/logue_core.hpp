@@ -32,6 +32,8 @@ typedef struct {
     uint8_t direction;
     uint16_t x;
     uint16_t y;
+    int16_t hp;
+    int16_t power;
 } logue_player_t;
 
 typedef struct {
@@ -39,6 +41,8 @@ typedef struct {
     uint8_t direction;
     uint16_t x;
     uint16_t y;
+    int16_t hp;
+    int16_t power;
 } logue_enemy_t;
 
 typedef struct {

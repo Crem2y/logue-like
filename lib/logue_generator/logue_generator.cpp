@@ -292,6 +292,8 @@ void LogueGenerator::spawn_player(logue_map_t* map) {
         map->players[0].available = true;
         map->players[0].x = x;
         map->players[0].y = y;
+        map->players[0].hp = 2; //test
+        map->players[0].power = 1; //test
     }
 }
 
@@ -316,6 +318,8 @@ logue_enemy_t LogueGenerator::spawn_enemy(logue_map_t* map, uint8_t difficulty) 
     enemy.available = true;
     enemy.x = x;
     enemy.y = y;
+    enemy.hp = 2; //test
+    enemy.power = 1; //test
 
     // todo: generating enemy info...
 
