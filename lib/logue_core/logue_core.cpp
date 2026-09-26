@@ -82,15 +82,15 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         int16_t target_x = player->x + dx;
         int16_t target_y = player->y + dy;
 
-        enum logue_map_element terrain = check_terrain(target_x, target_y);
-        enum logue_map_element object = check_object(target_x, target_y);
+        enum logue_map_element terrain = get_terrain_at(target_x, target_y);
+        logue_object_ref_t object = get_object_at(target_x, target_y);
 
         if (terrain == MAP_WALL) {
             printf("you attacked wall!\n");
-        } else if (object == MAP_ENEMY) {
+        } else if (object.type == MAP_ENEMY) {
             printf("you attacked enemy!\n");
-            attack((logue_actor_ref_t){ACTOR_PLAYER, 0}, get_actor_at(target_x, target_y));
-        } else if (object == MAP_ITEM) {
+            attack((logue_object_ref_t){MAP_PLAYER, 0}, object);
+        } else if (object.type == MAP_ITEM) {
             printf("you attacked item!\n");
         } else {
             printf("you attacked nothing!\n");
@@ -99,7 +99,7 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         break;
     }
     case CMD_SEARCH: {
-        enum logue_map_element element = check_terrain(player->x, player->y);
+        enum logue_map_element element = get_terrain_at(player->x, player->y);
         if(element == MAP_STAIR) {
             core_data.floor += 1;
             turn_result = TURN_NEXT_FLOOR;
@@ -178,7 +178,7 @@ void LogueCore::update_visibility(void) {
 }
 
 void LogueCore::update_enemies(void) {
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
+    for (int16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
         logue_enemy_t* enemy = &floor_info.enemies[i];
         if(!enemy->available) continue;
 
@@ -194,7 +194,7 @@ void LogueCore::update_enemies(void) {
 
         //test
         if(element == MAP_PLAYER) {
-            attack((logue_actor_ref_t){ACTOR_ENEMY, i}, (logue_actor_ref_t){ACTOR_PLAYER, 0});
+            attack((logue_object_ref_t){MAP_ENEMY, i}, (logue_object_ref_t){MAP_PLAYER, 0});
         }
     }
 }
@@ -215,16 +215,16 @@ enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int
     int16_t target_x = *x + dx;
     int16_t target_y = *y + dy;
 
-    enum logue_map_element terrain = check_terrain(target_x, target_y);
+    enum logue_map_element terrain = get_terrain_at(target_x, target_y);
 
     if (terrain == MAP_WALL) return MAP_WALL;
 
-    enum logue_map_element object = check_object(target_x, target_y);
+    logue_object_ref_t object = get_object_at(target_x, target_y);
 
-    switch (object) {
+    switch (object.type) {
     case MAP_PLAYER:
     case MAP_ENEMY:
-        return object;
+        return object.type;
 
     default:
         break;
@@ -233,12 +233,12 @@ enum logue_map_element LogueCore::move(uint16_t* x, uint16_t* y, int16_t dx, int
     *x = target_x;
     *y = target_y;
 
-    if (object != MAP_BLANK) return object;
+    if (object.type != MAP_BLANK) return object.type;
 
     return terrain;
 }
 
-enum logue_map_element LogueCore::check_terrain(uint16_t x, uint16_t y) {
+enum logue_map_element LogueCore::get_terrain_at(uint16_t x, uint16_t y) {
     if (x >= LOGUE_MAP_WIDTH || y >= LOGUE_MAP_HEIGHT) {
         return MAP_WALL;
     }
@@ -261,36 +261,40 @@ enum logue_map_element LogueCore::check_terrain(uint16_t x, uint16_t y) {
     return MAP_FLOOR;
 }
 
-enum logue_map_element LogueCore::check_object(uint16_t x, uint16_t y) {
-    if (x >= LOGUE_MAP_WIDTH || y >= LOGUE_MAP_HEIGHT) {
-        return MAP_BLANK;
-    }
+logue_object_ref_t LogueCore::get_object_at(uint16_t x, uint16_t y) {
+    logue_object_ref_t object = {MAP_BLANK, -1};
 
-    // check player
-    for(uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
-        if(!floor_info.players[i].available) continue;
-        if(floor_info.players[i].x == x && floor_info.players[i].y == y) {
-            return MAP_PLAYER;
+    for (int16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
+        logue_player_t* player = &floor_info.players[i];
+        if (!player->available) continue;
+
+        if (player->x == x && player->y == y) {
+            object = {MAP_PLAYER, i};
+            return object;
         }
     }
 
-    // check enemy
-    for(uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        if(!floor_info.enemies[i].available) continue;
-        if(floor_info.enemies[i].x == x && floor_info.enemies[i].y == y) {
-            return MAP_ENEMY;
+    for (int16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
+        logue_enemy_t* enemy = &floor_info.enemies[i];
+        if (!enemy->available) continue;
+
+        if (enemy->x == x && enemy->y == y) {
+            object = {MAP_ENEMY, i};
+            return object;
         }
     }
 
-    // check item
-    for(uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
-        if(!floor_info.items[i].available) continue;
-        if(floor_info.items[i].x == x && floor_info.items[i].y == y) {
-            return MAP_ITEM;
+    for (int16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
+        logue_item_t* item = &floor_info.items[i];
+        if (!item->available) continue;
+
+        if (item->x == x && item->y == y) {
+            object = {MAP_ITEM, i};
+            return object;
         }
     }
 
-    return MAP_BLANK;
+    return object;
 }
 
 int16_t LogueCore::get_room_at(uint16_t x, uint16_t y) {
@@ -326,46 +330,16 @@ void LogueCore::direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy)
     }
 }
 
-logue_actor_ref_t LogueCore::get_actor_at(uint16_t x, uint16_t y) {
-    logue_actor_ref_t actor = {ACTOR_NONE, 0};
-
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_PLAYERS; i++) {
-        logue_player_t* player = &floor_info.players[i];
-
-        if (!player->available)
-            continue;
-
-        if (player->x == x && player->y == y) {
-            logue_actor_ref_t actor = {ACTOR_PLAYER, i};
-            return actor;
-        }
-    }
-
-    for (uint16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
-        logue_enemy_t* enemy = &floor_info.enemies[i];
-
-        if (!enemy->available)
-            continue;
-
-        if (enemy->x == x && enemy->y == y) {
-            logue_actor_ref_t actor = {ACTOR_ENEMY, i};
-            return actor;
-        }
-    }
-
-    return actor;
-}
-
-void LogueCore::attack(logue_actor_ref_t attacker, logue_actor_ref_t target) {
+void LogueCore::attack(logue_object_ref_t attacker, logue_object_ref_t target) {
     switch (target.type) {
-    case ACTOR_PLAYER:
+    case MAP_PLAYER:
         if (target.index >= LOGUE_MAP_MAX_PLAYERS) return;
 
         floor_info.players[target.index].available = false;
         printf("you have been attacked!\n");
         break;
 
-    case ACTOR_ENEMY:
+    case MAP_ENEMY:
         if (target.index >= LOGUE_MAP_MAX_ENEMIES) return;
 
         floor_info.enemies[target.index].available = false;
