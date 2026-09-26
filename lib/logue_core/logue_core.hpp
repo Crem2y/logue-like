@@ -141,7 +141,7 @@ public:
     void direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy);
 
     void attack(logue_object_ref_t attacker, logue_object_ref_t target);
-    void pickup_item(uint16_t x, uint16_t y);
+    void pickup_item_at(uint16_t x, uint16_t y);
     void search(void);
 
     int get_seed(void) { return core_data.seed; }

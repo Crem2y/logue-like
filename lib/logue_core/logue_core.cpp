@@ -76,8 +76,6 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         is_movement_cmd = true;
         break;
     case CMD_ATTACK: {
-        enum logue_map_element element = MAP_BLANK;
-
         direction_to_offset(player->direction, &dx, &dy);
         int16_t target_x = player->x + dx;
         int16_t target_y = player->y + dy;
@@ -86,12 +84,12 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
         logue_object_ref_t object = get_object_at(target_x, target_y);
 
         if (terrain == MAP_WALL) {
-            printf("you attacked wall!\n");
+            printf("you attacked a wall!\n");
         } else if (object.type == MAP_ENEMY) {
-            printf("you attacked enemy!\n");
+            printf("you attacked an enemy!\n");
             attack((logue_object_ref_t){MAP_PLAYER, 0}, object);
         } else if (object.type == MAP_ITEM) {
-            printf("you attacked item!\n");
+            printf("you attacked an item!\n");
         } else {
             printf("you attacked nothing!\n");
         }
@@ -127,13 +125,13 @@ enum logue_turn_result LogueCore::update_player(enum logue_cmd cmd) {
 
         switch (element) {
         case MAP_WALL:
-            printf("you bumped into wall!\n");
+            printf("you bumped into a wall!\n");
             break;
         case MAP_ENEMY:
-            printf("you bumped into enemy!\n");
+            printf("you bumped into an enemy!\n");
             break;
         case MAP_ITEM:
-            pickup_item(player->x, player->y);
+            pickup_item_at(player->x, player->y);
             turn_result = TURN_PROCESSED;
             break;
         default:
@@ -205,6 +203,7 @@ enum logue_turn_result LogueCore::check_game_state(void) {
     logue_player_t* player = &floor_info.players[0];
 
     if (!player->available) {
+        printf("you died\n");
         return TURN_GAME_OVER;
     }
 
@@ -336,7 +335,7 @@ void LogueCore::attack(logue_object_ref_t attacker, logue_object_ref_t target) {
         if (target.index >= LOGUE_MAP_MAX_PLAYERS) return;
 
         floor_info.players[target.index].available = false;
-        printf("you have been attacked!\n");
+        printf("you were attacked!\n");
         break;
 
     case MAP_ENEMY:
@@ -348,7 +347,7 @@ void LogueCore::attack(logue_object_ref_t attacker, logue_object_ref_t target) {
     }
 }
 
-void LogueCore::pickup_item(uint16_t x, uint16_t y) {
+void LogueCore::pickup_item_at(uint16_t x, uint16_t y) {
     for (uint16_t i = 0; i < LOGUE_MAP_MAX_ITEMS; i++) {
         logue_item_t* item = &floor_info.items[i];
 
@@ -356,7 +355,7 @@ void LogueCore::pickup_item(uint16_t x, uint16_t y) {
 
         if (item->x == x && item->y == y) {
             item->available = false;
-            printf("you picked up item!\n");
+            printf("you picked up an item!\n");
             return;
         }
     }
@@ -375,5 +374,5 @@ void LogueCore::search(void) {
             floor_info.visibility[y][x] |= VIS_SEARCHED;
         }
     }
-    printf("searched!\n");
+    printf("search complete!\n");
 }
