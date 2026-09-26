@@ -95,6 +95,9 @@ int main() {
             Renderer.render_map(&logue_data, &logue_map, &render_config);
             break;
         case TURN_GAME_OVER:
+            Core.get_data(&logue_data);
+            Core.get_map(&logue_map);
+            Renderer.render_map(&logue_data, &logue_map, &render_config);
             printf("game over...\n");
             return 0;
         default:
