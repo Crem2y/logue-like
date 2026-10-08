@@ -8,11 +8,11 @@ The project is being developed as a portable game core, initially targeting PC t
 
 > **Development Status:** Early prototype. Core gameplay and map generation are under development.
 
+<!--
 ## Screenshots
 
-<!-- Add a screenshot of the terminal version here. -->
-
 ![Gameplay Screenshot](doc/screenshot.png)
+-->
 
 ## Game Concept
 
