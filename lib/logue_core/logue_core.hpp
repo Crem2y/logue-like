@@ -43,6 +43,7 @@ typedef struct {
     uint16_t y;
     int16_t hp;
     int16_t power;
+    bool chasing;
 } logue_enemy_t;
 
 typedef struct {

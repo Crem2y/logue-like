@@ -176,24 +176,56 @@ void LogueCore::update_visibility(void) {
 }
 
 void LogueCore::update_enemies(void) {
+    logue_player_t* player = &floor_info.players[0];
     for (int16_t i = 0; i < LOGUE_MAP_MAX_ENEMIES; i++) {
         logue_enemy_t* enemy = &floor_info.enemies[i];
         if(!enemy->available) continue;
 
-        uint8_t direction = rand() % 8;
-        direction &= 0xFE; // 8-direction to 4-direction
-        enemy->direction = direction;
+        int16_t dx = player->x - enemy->x;
+        int16_t dy = player->y - enemy->y;
+        int distance = abs(dx) + abs(dy);
 
-        int16_t dx = 0;
-        int16_t dy = 0;
+        if (distance >= 3) enemy->chasing = false;
 
-        direction_to_offset(direction, &dx, &dy);
-        enum logue_map_element element = move(&enemy->x, &enemy->y, dx, dy);
-
-        //test
-        if(element == MAP_PLAYER) {
+        // Attack is a whole action, never a side effect of movement.
+        if (distance == 1) {
+            uint8_t direction;
+            get_direction_from_to(enemy->x, enemy->y, player->x, player->y, &direction);
+            enemy->direction = direction;
+            // First detection consumes this action, giving the player time to react.
+            if (!enemy->chasing) {
+                enemy->chasing = true;
+                continue;
+            }
             attack((logue_object_ref_t){MAP_ENEMY, i}, (logue_object_ref_t){MAP_PLAYER, 0});
+            continue;
         }
+
+        if (enemy->chasing) {
+            // Try cardinal steps that reduce distance; no pathfinding or memory.
+            const uint8_t directions[] = {
+                (uint8_t)(dx < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT),
+                (uint8_t)(dy < 0 ? DIRECTION_UP : DIRECTION_DOWN)
+            };
+            for (int axis = 0; axis < 2; axis++) {
+                if ((axis == 0 ? dx : dy) == 0) continue;
+                int16_t dx = 0, dy = 0;
+                direction_to_offset(directions[axis], &dx, &dy);
+                uint16_t x = enemy->x + dx, y = enemy->y + dy;
+                logue_object_ref_t object = get_object_at(x, y);
+                if (get_terrain_at(x, y) == MAP_WALL ||
+                    object.type == MAP_PLAYER || object.type == MAP_ENEMY) continue;
+                enemy->direction = directions[axis];
+                move(&enemy->x, &enemy->y, dx, dy);
+                break;
+            }
+            continue;
+        }
+
+        enemy->direction = (rand() % 8) & 0xFE; // 8-direction to 4-direction
+
+        direction_to_offset(enemy->direction, &dx, &dy);
+        move(&enemy->x, &enemy->y, dx, dy);
     }
 }
 
