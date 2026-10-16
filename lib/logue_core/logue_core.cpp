@@ -313,6 +313,8 @@ int16_t LogueCore::get_room_at(uint16_t x, uint16_t y) {
 }
 
 void LogueCore::direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy) {
+    if (dx == NULL || dy == NULL) return;
+
     *dx = 0;
     *dy = 0;
 
@@ -326,6 +328,60 @@ void LogueCore::direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy)
     case DIRECTION_RIGHT:      *dx =  1; break;
     case DIRECTION_UP_RIGHT:   *dx =  1; *dy = -1; break;
     }
+}
+
+void LogueCore::get_direction_from_to(uint16_t from_x, uint16_t from_y, uint16_t to_x, uint16_t to_y, uint8_t* direction) {
+    if (direction == NULL) return;
+
+    int16_t dx = to_x - from_x;
+    int16_t dy = to_y - from_y;
+
+    if (dx == 0 && dy < 0) {
+        *direction = DIRECTION_UP;
+    } else if (dx < 0 && dy < 0) {
+        *direction = DIRECTION_UP_LEFT;
+    } else if (dx < 0 && dy == 0) {
+        *direction = DIRECTION_LEFT;
+    } else if (dx < 0 && dy > 0) {
+        *direction = DIRECTION_DOWN_LEFT;
+    } else if (dx == 0 && dy > 0) {
+        *direction = DIRECTION_DOWN;
+    } else if (dx > 0 && dy > 0) {
+        *direction = DIRECTION_DOWN_RIGHT;
+    } else if (dx > 0 && dy == 0) {
+        *direction = DIRECTION_RIGHT;
+    } else if (dx > 0 && dy < 0) {
+        *direction = DIRECTION_UP_RIGHT;
+    }
+}
+
+void LogueCore::get_object_position(logue_object_ref_t object, uint16_t* x, uint16_t* y) {
+    if (x == NULL || y == NULL) return;
+
+    switch (object.type) {
+    case MAP_PLAYER:
+        if (object.index < 0 || object.index >= LOGUE_MAP_MAX_PLAYERS) return;
+
+        *x = floor_info.players[object.index].x;
+        *y = floor_info.players[object.index].y;
+        break;
+
+    case MAP_ENEMY:
+        if (object.index < 0 || object.index >= LOGUE_MAP_MAX_ENEMIES) return;
+
+        *x = floor_info.enemies[object.index].x;
+        *y = floor_info.enemies[object.index].y;
+        break;
+
+    case MAP_ITEM:
+        if (object.index < 0 || object.index >= LOGUE_MAP_MAX_ITEMS) return;
+
+        *x = floor_info.items[object.index].x;
+        *y = floor_info.items[object.index].y;
+        break;
+    }
+
+    return;
 }
 
 void LogueCore::attack(logue_object_ref_t attacker, logue_object_ref_t target) {
@@ -352,7 +408,29 @@ void LogueCore::attack(logue_object_ref_t attacker, logue_object_ref_t target) {
         logue_player_t* player = &floor_info.players[target.index];
 
         player->hp -= damage;
-        printf("you were attacked! (%d)\n", -damage);
+
+        uint16_t attacker_x, attacker_y;
+        get_object_position(attacker, &attacker_x, &attacker_y);
+        uint8_t enemy_direction;
+        get_direction_from_to(player->x, player->y, attacker_x, attacker_y, &enemy_direction);
+        switch (enemy_direction) {
+        case DIRECTION_UP:
+            printf("you were attacked from above! (%d)\n", -damage);
+            break;
+        case DIRECTION_DOWN:
+            printf("you were attacked from below! (%d)\n", -damage);
+            break;
+        case DIRECTION_LEFT:
+            printf("you were attacked from the left! (%d)\n", -damage);
+            break;
+        case DIRECTION_RIGHT:
+            printf("you were attacked from the right! (%d)\n", -damage);
+            break;
+        default:
+            printf("you were attacked! (%d)\n", -damage);
+            break;
+        }
+        
 
         if (player->hp <= 0) {
             player->hp = 0;

@@ -143,6 +143,8 @@ public:
 
     int16_t get_room_at(uint16_t x, uint16_t y);
     void direction_to_offset(uint8_t direction, int16_t* dx, int16_t* dy);
+    void get_direction_from_to(uint16_t from_x, uint16_t from_y, uint16_t to_x, uint16_t to_y, uint8_t* direction);
+    void get_object_position(logue_object_ref_t object, uint16_t* x, uint16_t* y);
 
     void attack(logue_object_ref_t attacker, logue_object_ref_t target);
     void pickup_item_at(uint16_t x, uint16_t y);

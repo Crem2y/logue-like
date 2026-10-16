@@ -2,7 +2,7 @@
 
 const logue_renderer_config_t normal_config = {
     .map    = RENDER_DISCOVERED,
-    .stair  = RENDER_VISIBLE,
+    .stair  = RENDER_DISCOVERED,
     .player = RENDER_SEARCHED,
     .enemy  = RENDER_SEARCHED,
     .item   = RENDER_VISIBLE,
